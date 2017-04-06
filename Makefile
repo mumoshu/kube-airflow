@@ -32,6 +32,7 @@ $(DOCKERFILE): $(BUILD_ROOT)
 	sed -e 's/%%KUBECTL_VERSION%%/'"$(KUBECTL_VERSION)"'/g;' -e 's/%%AIRFLOW_VERSION%%/'"$(AIRFLOW_VERSION)"'/g;' Dockerfile.template > $(DOCKERFILE)
 
 $(ROOTFS): $(BUILD_ROOT)
+	mkdir -p rootfs
 	cp -R rootfs $(ROOTFS)
 
 $(AIRFLOW_CONF): $(BUILD_ROOT)
