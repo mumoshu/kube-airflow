@@ -1,4 +1,4 @@
-# VERSION 1.7.1.3
+# VERSION 1.8.0.0
 # AUTHOR: Yusuke KUOKA
 # DESCRIPTION: Docker image to run Airflow on Kubernetes which is capable of creating Kubernetes jobs
 # BUILD: docker build --rm -t mumoshu/kube-airflow
@@ -29,11 +29,14 @@ RUN set -ex \
         python-dev \
         libkrb5-dev \
         libsasl2-dev \
+        libxml2-dev \
         libssl-dev \
         libffi-dev \
         build-essential \
         libblas-dev \
         liblapack-dev \
+        libxslt1-dev \
+        zlib1g-dev \
     ' \
     && echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sources.list.d/backports.list \
     && apt-get update -yqq \
