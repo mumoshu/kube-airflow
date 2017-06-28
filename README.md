@@ -3,6 +3,15 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/mumoshu/kube-airflow.svg?maxAge=2592000)]()
 [![Docker Stars](https://img.shields.io/docker/stars/mumoshu/kube-airflow.svg?maxAge=2592000)]()
 
+kube-airflow provides a set of tools to run Airflow in a Kubernetes cluster.
+This is useful when you'd want:
+
+* Easy high availability of the Airflow scheduler
+  * [Running multiple schedulers for high availability isn't safe](https://groups.google.com/forum/#!topic/airbnb_airflow/-1wKa3OcwME) so it isn't the way to go in the first place. [Someone in the internet tried to implement a wrapper](https://stackoverflow.com/a/39595535) to implement leader election on top of the scheduler so that only one scheduler executes the tasks at a time. It is possbile but can't we just utilize a kind of cluster manager here? This is where Kubernetes comes into play.
+* Easy parallelism of task executions
+  * The common way to scale out workers in Airflow is to utilize Celery. However, managing a H/A backend database and Celery workers just for parallelising task executions sounds like a hassle. This is where Kubernetes comes into play, again. If you already had a K8S cluster, just let K8S manage them for you.
+  * If you have ever considered to avoid Celery for task parallelism, yes, K8S can still help you for a while. Just keep using `LocalExecutor` instead of `CeleryExecutor` and delegate actual tasks to Kubernetes by calling e.g. `kubectl run --restart=Never ...` from your tasks. It will work until the `kubectl run` executions consumes all the resources a single airflow-scheduler pod provides, which will be after the pretty long time.
+
 This repository contains:
 
 * **Dockerfile(.template)** of [airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/) images published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
