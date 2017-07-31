@@ -52,6 +52,7 @@ RUN set -ex \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install psycopg2 \
+    && pip install --upgrade --user awscli \
     && pip install airflow[celery,postgresql,hive,password]==$AIRFLOW_VERSION \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \ 
     && apt-get update \
@@ -79,6 +80,15 @@ COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
 RUN chown -R airflow: ${AIRFLOW_HOME} \
     && chmod +x ${AIRFLOW_HOME}/entrypoint.sh
+
+ENV SPARK_HOME /usr/local/airflow/spark
+
+RUN curl -O https://d3kbcqa49mib13.cloudfront.net/spark-2.2.0-bin-hadoop2.7.tgz \
+    &&  mkdir /usr/local/airflow/spark \
+    && tar -zxvf spark-2.2.0-bin-hadoop2.7.tgz -C /usr/local/airflow/spark --strip-components=1 \
+    && rm spark-2.2.0-bin-hadoop2.7.tgz
+
+COPY script/dag_from_s3.py ${AIRFLOW_HOME}/dags/dag_from_s3.py
 
 EXPOSE 8080 5555 8793
 
