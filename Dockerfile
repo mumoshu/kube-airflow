@@ -54,7 +54,7 @@ RUN set -ex \
     && pip install psycopg2 \
     && pip install --upgrade --user awscli \
     && pip install airflow[celery,postgresql,hive,password]==$AIRFLOW_VERSION \
-    && apt-get remove --purge -yqq $buildDeps libpq-dev \ 
+    #&& apt-get remove --purge -yqq $buildDeps libpq-dev \ 
     && apt-get update \
     && apt-get install python-software-properties -y \
     && apt-get install apt-file -y \
@@ -89,6 +89,12 @@ RUN curl -O https://d3kbcqa49mib13.cloudfront.net/spark-2.2.0-bin-hadoop2.7.tgz 
     && rm spark-2.2.0-bin-hadoop2.7.tgz
 
 COPY script/dag_from_s3.py ${AIRFLOW_HOME}/dags/dag_from_s3.py
+
+
+#  merge this into the above install list later, down here so I don't have to rebuild the whole image
+RUN pip uninstall awscli -y
+RUN pip install awscli
+
 
 EXPOSE 8080 5555 8793
 
