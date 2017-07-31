@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app: airflow
+    tier: db
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5432
+      targetPort: postgres
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  type: LoadBalancer
+  selector:
+    app: airflow
+    tier: all
+  ports:
+    - name: web
+      protocol: TCP
+      port: 8080
+      targetPort: web
+      nodePort: 32080
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: airflow
+        tier: db
+    spec:
+      containers:
+      - name: postgres
+        image: postgres
+        ports:
+        - name: postgres
+          containerPort: 5432
+        env:
+         - name: POSTGRES_USER
+           value: "airflow"
+         - name: POSTGRES_PASSWORD
+           value: "airflow"
+         - name: POSTGRES_DB
+           value: "airflow"
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: airflow
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: airflow
+        tier: all
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: web
+        image: quay.io/coffeepac/kube-airflow:dpunk
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+        env:
+        - name: AIRFLOW_HOME
+          value: "/usr/local/airflow"
+        ports:
+        - name: web
+          containerPort: 8080
+        args: ["webserver"]

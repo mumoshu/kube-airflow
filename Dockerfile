@@ -1,18 +1,11 @@
-# VERSION 1.8.0.0
-# AUTHOR: Yusuke KUOKA
-# DESCRIPTION: Docker image to run Airflow on Kubernetes which is capable of creating Kubernetes jobs
-# BUILD: docker build --rm -t mumoshu/kube-airflow
-# SOURCE: https://github.com/mumoshu/kube-airflow
-
 FROM debian:jessie
-MAINTAINER Yusuke KUOKA <ykuoka@gmail.com>
 
 # Never prompts the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=%%AIRFLOW_VERSION%%
+ARG AIRFLOW_VERSION=1.8.0
 ENV AIRFLOW_HOME /usr/local/airflow
 
 # Define en_US.
@@ -40,13 +33,13 @@ RUN set -ex \
     ' \
     && echo "deb http://http.debian.net/debian jessie-backports main" >/etc/apt/sources.list.d/backports.list \
     && apt-get update -yqq \
-    && apt-get install -yqq --no-install-recommends \
+    && apt-get install -yqq --allow-unauthenticated --no-install-recommends \
         $buildDeps \
         apt-utils \
         curl \
         netcat \
         locales \
-    && apt-get install -yqq -t jessie-backports python-requests libpq-dev \
+    && apt-get install -yqq -t jessie-backports  --allow-unauthenticated python-requests libpq-dev \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
@@ -59,8 +52,14 @@ RUN set -ex \
     && pip install ndg-httpsclient \
     && pip install pyasn1 \
     && pip install psycopg2 \
-    && pip install airflow[celery,postgresql,hive]==$AIRFLOW_VERSION \
-    && apt-get remove --purge -yqq $buildDeps libpq-dev \
+    && pip install airflow[celery,postgresql,hive,password]==$AIRFLOW_VERSION \
+    && apt-get remove --purge -yqq $buildDeps libpq-dev \ 
+    && apt-get update \
+    && apt-get install python-software-properties -y \
+    && apt-get install apt-file -y \
+    && apt-file update \
+    && apt-get install software-properties-common -y \
+    && apt-get install vim -y \
     && apt-get clean \
     && rm -rf \
         /var/lib/apt/lists/* \
@@ -70,7 +69,8 @@ RUN set -ex \
         /usr/share/doc \
         /usr/share/doc-base
 
-ENV KUBECTL_VERSION %%KUBECTL_VERSION%%
+
+ENV KUBECTL_VERSION 1.6.7
 
 RUN curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl && chmod +x /usr/local/bin/kubectl
 
@@ -82,6 +82,6 @@ RUN chown -R airflow: ${AIRFLOW_HOME} \
 
 EXPOSE 8080 5555 8793
 
-USER airflow
+#USER airflow
 WORKDIR ${AIRFLOW_HOME}
 ENTRYPOINT ["./entrypoint.sh"]
