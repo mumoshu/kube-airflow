@@ -70,7 +70,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: web
-        image: quay.io/coffeepac/kube-airflow:aws-dag
+        image: quay.io/coffeepac/kube-airflow:1.8.1-db1
         resources:
           requests:
             memory: "2Gi"

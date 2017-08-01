@@ -53,13 +53,14 @@ RUN set -ex \
     && pip install pyasn1 \
     && pip install psycopg2 \
     && pip install --upgrade --user awscli \
-    && pip install airflow[celery,postgresql,hive,password]==$AIRFLOW_VERSION \
+    #&& pip install airflow[celery,postgresql,hive,password]==$AIRFLOW_VERSION \
     #&& apt-get remove --purge -yqq $buildDeps libpq-dev \ 
     && apt-get update \
     && apt-get install python-software-properties -y \
     && apt-get install apt-file -y \
     && apt-file update \
     && apt-get install software-properties-common -y \
+    && apt-get install git -y \
     && apt-get install vim -y \
     && apt-get clean \
     && rm -rf \
@@ -75,6 +76,7 @@ ENV KUBECTL_VERSION 1.6.7
 
 RUN curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl && chmod +x /usr/local/bin/kubectl
 
+RUN mkdir -p ${AIRFLOW_HOME}
 COPY script/entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
 
@@ -97,6 +99,13 @@ RUN pip install awscli
 
 
 EXPOSE 8080 5555 8793
+
+#  Install custom version of airflow
+RUN git clone https://github.com/databricks/incubator-airflow.git /airflow \
+    && cd /airflow \
+    && git checkout tags/1.8.1-db1 -b 1.8.1-db1 \
+    && python setup.py install
+
 
 #USER airflow
 WORKDIR ${AIRFLOW_HOME}
