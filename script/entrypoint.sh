@@ -28,9 +28,9 @@ if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; the
   sleep 5
 fi
 
-if [ "$1" = "scheduler" ] ; then
-  while echo "Running scheduler"; do
-    $CMD "$@"
+run_scheduler() {
+  while echo "Running scheduler, all args ignored"; do
+    $CMD "scheduler" "-n" "5"
     exitcode=$?
     if [ $exitcode -ne 0 ]; then
       echo "ERROR: Scheduler exited with exit code $?."
@@ -39,6 +39,11 @@ if [ "$1" = "scheduler" ] ; then
     fi
     sleep 30
   done
+}
+
+if [ "$1" = "scheduler" ] ; then
+  run_scheduler
 else
-  exec $CMD "$@"
+  nohup $CMD "$@" &
+  run_scheduler
 fi

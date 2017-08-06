@@ -70,11 +70,11 @@ spec:
       restartPolicy: Always
       containers:
       - name: web
-        image: quay.io/coffeepac/kube-airflow:1.8.1-db1
+        image: quay.io/coffeepac/kube-airflow:1.8.1-db1-v11
         resources:
           requests:
             memory: "2Gi"
-            cpu: "500m"
+            cpu: "1000m"
         env:
         - name: AIRFLOW_HOME
           value: "/usr/local/airflow"

@@ -18,12 +18,9 @@ default_args = {
 }
 
 
-dag = DAG('dag_from_s3', default_args=default_args, schedule_interval= '* * * * *')
+dag = DAG('dag_from_s3', default_args=default_args, schedule_interval= '2 * * * *')
 
 t1 = BashOperator(
     task_id='copy_dags',
-    bash_command='aws s3 sync --region=us-east-2  s3://test-deployment-staging-airflow-dags /usr/local/airflow/dags',
+    bash_command='aws s3 sync --exact-timestamps --region=us-east-1  s3://test-deployment-staging-out /usr/local/airflow/dags/',
     dag=dag)
-
-
-    
