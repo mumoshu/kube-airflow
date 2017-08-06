@@ -37,7 +37,7 @@ kind: Service
 metadata:
   name: web
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: airflow
     tier: web
@@ -185,7 +185,7 @@ spec:
       restartPolicy: Always
       containers:
       - name: scheduler
-        image: mumoshu/kube-airflow:1.8.0.0-1.6.1
+        image: quay.io/coffeepac/kube-airflow:scheduler-loop-v3
         # volumes:
         #     - /localpath/to/dags:/usr/local/airflow/dags
         env:

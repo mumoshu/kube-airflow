@@ -4,26 +4,10 @@ CMD="airflow"
 TRY_LOOP="10"
 POSTGRES_HOST="postgres"
 POSTGRES_PORT="5432"
-RABBITMQ_HOST="rabbitmq"
-RABBITMQ_CREDS="airflow:airflow"
 FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")
 
 # Generate Fernet key
 sed -i "s/{FERNET_KEY}/${FERNET_KEY}/" $AIRFLOW_HOME/airflow.cfg
-
-# wait for rabbitmq
-if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ "$1" = "flower" ] ; then
-  j=0
-  while ! curl -sI -u $RABBITMQ_CREDS http://$RABBITMQ_HOST:15672/api/whoami |grep '200 OK'; do
-    j=`expr $j + 1`
-    if [ $j -ge $TRY_LOOP ]; then
-      echo "$(date) - $RABBITMQ_HOST still not reachable, giving up"
-      exit 1
-    fi
-    echo "$(date) - waiting for RabbitMQ... $j/$TRY_LOOP"
-    sleep 5
-  done
-fi
 
 # wait for DB
 if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; then
@@ -44,4 +28,22 @@ if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; the
   sleep 5
 fi
 
-exec $CMD "$@"
+run_scheduler() {
+  while echo "Running scheduler, all args ignored"; do
+    $CMD "scheduler" "-n" "5"
+    exitcode=$?
+    if [ $exitcode -ne 0 ]; then
+      echo "ERROR: Scheduler exited with exit code $?."
+      echo $(date)
+      exit $exitcode 
+    fi
+    sleep 30
+  done
+}
+
+if [ "$1" = "scheduler" ] ; then
+  run_scheduler
+else
+  nohup $CMD "$@" &
+  run_scheduler
+fi
