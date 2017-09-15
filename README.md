@@ -37,7 +37,7 @@ Create all the deployments and services for Airflow:
 
 ## Usage
 
-Create all the deployments and services to run Airflow on Kubernetse:
+Create all the deployments and services to run Airflow on Kubernetes:
 
        kubectl create -f airflow.all.yaml
 
