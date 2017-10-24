@@ -15,31 +15,21 @@ This is useful when you'd want:
 This repository contains:
 
 * **Dockerfile(.template)** of [airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/) images published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
-* **airflow.all.yaml** for creating Kubernetes services and deployments to run Airflow on Kubernetes
+* **airflow.all.yaml** for manual creating Kubernetes services and deployments to run Airflow on Kubernetes
+* **Helm Chart** for deployments using Helm
 
 ## Informations
 
 * Highly inspired by the great work [puckel/docker-airflow](https://github.com/puckel/docker-airflow)
-* Based on Debian Jessie official Image [debian:jessie](https://registry.hub.docker.com/_/debian/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [RabbitMQ](https://hub.docker.com/_/rabbitmq/) as queue
+* Based on Debian Jessie official Image [debian:stretch](https://registry.hub.docker.com/_/debian/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [RabbitMQ](https://hub.docker.com/_/rabbitmq/) as queue
 * Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/airflow)
 
-## Installation
+## Manual Installation
 
-Create all the deployments and services for Airflow:
-
-        kubectl create -f airflow.all.yaml
-
-## Build
-
-`git clone` this repository and then just run:
-
-        make build
-
-## Usage
 
 Create all the deployments and services to run Airflow on Kubernetes:
 
-       kubectl create -f airflow.all.yaml
+    kubectl create -f airflow.all.yaml
 
 It will create deployments for:
 
@@ -56,6 +46,68 @@ and services for:
 * rabbitmq
 * airflow-webserver
 * airflow-flower
+
+## Helm Deployment
+
+Ensure your helm installation is done, you may need to have `TILLER_NAMESPACE` set as
+environment variable.
+
+Deploy to Kubernetes using:
+
+    make helm-install NAMESPACE=airflow
+
+Upgrade your installation with:
+
+    make helm-upgrade
+
+Remove from the cluster using:
+
+    make helm-uninstall
+
+### Helm ingresses
+
+The Chart provides ingress configuration to allow customization the installation by adapting
+the `config.yaml` depending on your setup.
+
+### Prefix
+
+This Helm chart allows using a "prefix" string that will be added to every Kubernetes names.
+That allows instantiating several, independent Airflow in the same namespace.
+
+Note:
+
+    Do NOT use characters such as " (double quote), ' (simple quote), / (slash) or \ (backslash)
+    in your passwords and prefix
+
+### git-sync
+
+This chart allows using git-sync to synchronize DAGs with a git project. While it is extremely cool
+to see its DAG appears on Airflow 60s after merge on this project, you should be aware of some
+limitation Airflow has with dynamic DAG updates
+
+    If the scheduler reloads a dag in the middle of a dagrun then the dagrun will actually start
+    using the new version of the dag in the middle of execution.
+
+This is a known issue with airflow and it means it's unsafe in general to use a git-sync
+like solution with airflow without:
+
+ - using explicit locking, ie never pull down a new dag if a dagrun is in progress
+ - make dags immutable, never modify your dag always make a new one
+
+### Helm configuration customization
+
+Helm allow to overload the configuration to adapt to your environment. You probably want to specify
+your own ingress configuration for instance.
+
+
+
+## Build Docker image
+
+`git clone` this repository and then just run:
+
+    make build
+
+## Run with minikube
 
 You can browse the Airflow dashboard via running:
 

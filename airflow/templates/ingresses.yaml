@@ -1,0 +1,37 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.airflow.prefix -}}airflow
+  annotations:
+    {{ range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  rules:
+    - http:
+        paths:
+          - path: {{ .Values.ingress.path.web }}
+            backend:
+              serviceName: {{ .Values.airflow.prefix -}}web
+              servicePort: {{ .Values.airflow.prefix -}}pweb
+      host: {{ .Values.ingress.host }}
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: {{ .Values.airflow.prefix -}}airflow-flower
+  annotations:
+    {{ range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+spec:
+  rules:
+    - http:
+        paths:
+          - path: {{ .Values.ingress.path.flower }}
+            backend:
+              serviceName: {{ .Values.airflow.prefix -}}flower
+              servicePort: {{ .Values.airflow.prefix -}}pflower
+      host: {{ .Values.ingress.host }}
+{{- end }}

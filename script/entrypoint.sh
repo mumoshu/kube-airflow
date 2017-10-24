@@ -1,20 +1,37 @@
 #!/usr/bin/env bash
 
 CMD="airflow"
-TRY_LOOP="10"
-POSTGRES_HOST="postgres"
-POSTGRES_PORT="5432"
-RABBITMQ_HOST="rabbitmq"
-RABBITMQ_CREDS="airflow:airflow"
-FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")
+TRY_LOOP="${TRY_LOOP:-10}"
+POSTGRES_HOST="${POSTGRES_HOST:-postgres}"
+POSTGRES_PORT=5432
+POSTGRES_CREDS="${POSTGRES_CREDS:-airflow:airflow}"
+RABBITMQ_HOST="${RABBITMQ_HOST:-rabbitmq}"
+RABBITMQ_CREDS="${RABBITMQ_CREDS:-airflow:airflow}"
+RABBITMQ_MANAGEMENT_PORT=15672
+FLOWER_URL_PREFIX="${FLOWER_URL_PREFIX:-/}"
+LOAD_DAGS_EXAMPLES="${LOAD_DAGS_EXAMPLES:false}"
+
+if [ -z $FERNET_KEY ]; then
+    FERNET_KEY=$(python3 -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY))"
+fi
+
+echo "Postgres host: $POSTGRES_HOST"
+echo "RabbitMQ host: $RABBITMQ_HOST"
+echo
 
 # Generate Fernet key
-sed -i "s/{FERNET_KEY}/${FERNET_KEY}/" $AIRFLOW_HOME/airflow.cfg
+cp -f $AIRFLOW_HOME/airflow.cfg.in $AIRFLOW_HOME/airflow.cfg
+sed -i "s/{{ FERNET_KEY }}/${FERNET_KEY}/" $AIRFLOW_HOME/airflow.cfg
+sed -i "s/{{ POSTGRES_HOST }}/${POSTGRES_HOST}/" $AIRFLOW_HOME/airflow.cfg
+sed -i "s/{{ POSTGRES_CREDS }}/${RABBITMQ_CREDS}/" $AIRFLOW_HOME/airflow.cfg
+sed -i "s/{{ RABBITMQ_HOST }}/${RABBITMQ_HOST}/" $AIRFLOW_HOME/airflow.cfg
+sed -i "s/{{ RABBITMQ_CREDS }}/${RABBITMQ_CREDS}/" $AIRFLOW_HOME/airflow.cfg
+sed -i "s/{{ LOAD_DAGS_EXAMPLES }}/${LOAD_DAGS_EXAMPLES}/" $AIRFLOW_HOME/airflow.cfg
 
 # wait for rabbitmq
 if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ "$1" = "flower" ] ; then
   j=0
-  while ! curl -sI -u $RABBITMQ_CREDS http://$RABBITMQ_HOST:15672/api/whoami |grep '200 OK'; do
+  while ! curl -sI -u $RABBITMQ_CREDS http://$RABBITMQ_HOST:$RABBITMQ_MANAGEMENT_PORT/api/whoami |grep '200 OK'; do
     j=`expr $j + 1`
     if [ $j -ge $TRY_LOOP ]; then
       echo "$(date) - $RABBITMQ_HOST still not reachable, giving up"
@@ -44,4 +61,9 @@ if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; the
   sleep 5
 fi
 
-exec $CMD "$@"
+if [ ! -z $GIT_SYNC_REPO ]; then
+    echo "Executing background task git-sync on repo $GIT_SYNC_REPO"
+    $AIRFLOW_HOME/git-sync --dest $AIRFLOW_HOME/dags &
+fi
+
+$CMD "$@"

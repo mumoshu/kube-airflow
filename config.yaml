@@ -1,0 +1,8 @@
+airflow:
+  # Duplicate this file and put your customization here
+  # Generate fernet_key with:
+  #    python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"
+  # fernet_key: ABCDABCDABCDABCDABCDABCDABCDABCDABCDABCD
+  # Note:
+  #   do NOT use characters such as " (double quote), ' (simple quote), / (slash) or \ (backslash)
+  #   in your passwords

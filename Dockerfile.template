@@ -4,7 +4,7 @@
 # BUILD: docker build --rm -t mumoshu/kube-airflow
 # SOURCE: https://github.com/mumoshu/kube-airflow
 
-FROM debian:jessie
+FROM debian:stretch
 MAINTAINER Yusuke KUOKA <ykuoka@gmail.com>
 
 # Never prompts the user for choices on installation/configuration of packages
@@ -21,12 +21,12 @@ ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
-ENV LC_ALL  en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
 
 RUN set -ex \
     && buildDeps=' \
-        python-pip \
-        python-dev \
+        python3-pip \
+        python3-dev \
         libkrb5-dev \
         libsasl2-dev \
         libxml2-dev \
@@ -46,20 +46,21 @@ RUN set -ex \
         curl \
         netcat \
         locales \
-    && apt-get install -yqq -t jessie-backports python-requests libpq-dev \
+    && apt-get install -yqq -t jessie-backports libpq-dev git \
     && sed -i 's/^# en_US.UTF-8 UTF-8$/en_US.UTF-8 UTF-8/g' /etc/locale.gen \
     && locale-gen \
     && update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
     && useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
-    && pip uninstall setuptools \
-    && pip install setuptools==33.1.1 \
-    && pip install pytz==2015.7 \
-    && pip install cryptography \
-    && pip install pyOpenSSL \
-    && pip install ndg-httpsclient \
-    && pip install pyasn1 \
-    && pip install psycopg2 \
-    && pip install airflow[celery,postgresql,hive]==$AIRFLOW_VERSION \
+    && pip3 install --upgrade pip enum34 'setuptools!=36.0.0' \
+    && pip3 install pytz==2015.7 \
+    && pip3 install cryptography \
+    && pip3 install requests \
+    && pip3 install pyOpenSSL \
+    && pip3 install ndg-httpsclient \
+    && pip3 install pyasn1 \
+    && pip3 install psycopg2 \
+    && pip3 install airflow[celery,postgresql,hive] \
+    && pip3 install click \
     && apt-get remove --purge -yqq $buildDeps libpq-dev \
     && apt-get clean \
     && rm -rf \
@@ -75,10 +76,12 @@ ENV KUBECTL_VERSION %%KUBECTL_VERSION%%
 RUN curl -L -o /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl && chmod +x /usr/local/bin/kubectl
 
 COPY script/entrypoint.sh ${AIRFLOW_HOME}/entrypoint.sh
-COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY config/airflow.cfg.in ${AIRFLOW_HOME}/airflow.cfg.in
+COPY script/git-sync ${AIRFLOW_HOME}/git-sync
 
 RUN chown -R airflow: ${AIRFLOW_HOME} \
-    && chmod +x ${AIRFLOW_HOME}/entrypoint.sh
+    && chmod +x ${AIRFLOW_HOME}/entrypoint.sh \
+    && chmod +x ${AIRFLOW_HOME}/git-sync
 
 EXPOSE 8080 5555 8793
 
