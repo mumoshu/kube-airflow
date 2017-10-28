@@ -79,11 +79,24 @@ Note:
     Do NOT use characters such as " (double quote), ' (simple quote), / (slash) or \ (backslash)
     in your passwords and prefix
 
-### git-sync
+### DAGs deployment: embedded DAGs or git-sync
 
-This chart allows using git-sync to synchronize DAGs with a git project. While it is extremely cool
-to see its DAG appears on Airflow 60s after merge on this project, you should be aware of some
-limitation Airflow has with dynamic DAG updates
+This chart provide basically two way of deploying DAGs in your Airflow installation:
+
+- embedded DAGs
+- Git-Sync
+
+An enhancement can be to support Persistant Storage. If you are willing to contribute, do not
+hesitate to do a Pull Request !
+
+#### Using Git-Sync
+
+Git-sync is the easiest way to automatically update your DAGs. It simply check periodially (by
+default every minute) a Git project on a given branch and check this new version when available.
+Scheduler and worker see changes almost real-time. There is no need to other tool and complex
+rolling-update procedure.
+
+While it is extremely cool to see its DAG appears on Airflow 60s after merge on this project, you should be aware of some limitations Airflow has with dynamic DAG updates:
 
     If the scheduler reloads a dag in the middle of a dagrun then the dagrun will actually start
     using the new version of the dag in the middle of execution.
@@ -94,11 +107,56 @@ like solution with airflow without:
  - using explicit locking, ie never pull down a new dag if a dagrun is in progress
  - make dags immutable, never modify your dag always make a new one
 
+Also keep in mind using git-sync may not be scalable at all in production if you have lot of DAGs.
+The best way to deploy you DAG is to build a new docker image containing all the DAG and their
+dependencies. To do so, fork this project
+
+#### Embedded DAGs
+
+If you want more control on the way you deploy your DAGs, you can use embedded DAGs, where DAGs
+are burned inside the Docker container deployed as Scheduler and Workers.
+
+Be aware this requirement more heavy tooling than using git-sync, especially if you use CI/CD:
+
+- your CI/CD should be able to build a new docker image each time your DAGs are updated.
+- your CI/CD should be able to control the deployment of this new image in your kubernetes cluster
+
+Example of procedure:
+- Fork this project
+- Place your DAG inside the `dags` folder of this project, update `requirements-dags.txt` to
+  install new dependencies if needed (see bellow)
+- Add build script connected to your CI that will build the new docker image
+- Deploy on your Kubernetes cluster
+
+You can avoid forking this project by:
+
+- keep a git-project dedicated to storing only your DAGs + dedicated `requirements.txt`
+- you can gate any change to DAGs in your CI (unittest, `pip install -r requirements-dags.txt`,.. )
+- have your CI/CD makes a new docker image after each successful merge using
+
+      DAG_PATH=$PWD
+      cd /path/to/kube-aiflow
+      make ENBEDDED_DAGS_LOCATION=$DAG_PATH
+
+- trigger the deployment on this new image on your Kubernetes infrastructure
+
+### Python dependencies
+
+If you want to add specific python dependencies to use in your DAGs, you simply declare them inside
+the `requirements/dags.txt` file. They will be automatically installed inside the container during
+build, so you can directly use these library in your DAGs.
+
+To use another file, call:
+
+    make REQUIREMENTS_TXT_LOCATION=/path/to/you/dags/requirements.txt
+
+Please note this requires you set up the same tooling environment in your CI/CD that when using
+Embedded DAGs.
+
 ### Helm configuration customization
 
 Helm allow to overload the configuration to adapt to your environment. You probably want to specify
 your own ingress configuration for instance.
-
 
 
 ## Build Docker image
@@ -111,6 +169,7 @@ your own ingress configuration for instance.
 
 You can browse the Airflow dashboard via running:
 
+    minikube start
     make browse-web
 
 the Flower dashboard via running:

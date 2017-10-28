@@ -9,14 +9,17 @@ RABBITMQ_HOST="${RABBITMQ_HOST:-rabbitmq}"
 RABBITMQ_CREDS="${RABBITMQ_CREDS:-airflow:airflow}"
 RABBITMQ_MANAGEMENT_PORT=15672
 FLOWER_URL_PREFIX="${FLOWER_URL_PREFIX:-/}"
-LOAD_DAGS_EXAMPLES="${LOAD_DAGS_EXAMPLES:false}"
+LOAD_DAGS_EXAMPLES="${LOAD_DAGS_EXAMPLES:-true}"
+GIT_SYNC_REPO="${GIT_SYNC_REPO:-}"
 
 if [ -z $FERNET_KEY ]; then
-    FERNET_KEY=$(python3 -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY))"
+    FERNET_KEY=$(python3 -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")
 fi
 
 echo "Postgres host: $POSTGRES_HOST"
 echo "RabbitMQ host: $RABBITMQ_HOST"
+echo "Load DAG examples: $LOAD_DAGS_EXAMPLES"
+echo "Git sync repository: $GIT_SYNC_REPO"
 echo
 
 # Generate Fernet key
@@ -42,7 +45,7 @@ if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ 
   done
 fi
 
-# wait for DB
+# wait for postgres
 if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; then
   i=0
   while ! nc $POSTGRES_HOST $POSTGRES_PORT >/dev/null 2>&1 < /dev/null; do
@@ -62,6 +65,9 @@ if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; the
 fi
 
 if [ ! -z $GIT_SYNC_REPO ]; then
+    mkdir -p $AIRFLOW_HOME/dag
+    # remove possible embedded dags to avoid conflicts
+    rm -rf $AIRFLOW_HOME/dags/*
     echo "Executing background task git-sync on repo $GIT_SYNC_REPO"
     $AIRFLOW_HOME/git-sync --dest $AIRFLOW_HOME/dags &
 fi

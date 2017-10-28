@@ -1,0 +1,12 @@
+# This file contains the dependencies needed to install airflow
+# To declare new dependencies, use `requirements-dags.txt`
+
+pytz==2015.7
+cryptography
+requests
+pyOpenSSL
+ndg-httpsclient
+pyasn1
+psycopg2
+airflow[celery,postgresql,hive]
+click
