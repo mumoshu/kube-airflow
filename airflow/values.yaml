@@ -41,6 +41,15 @@ db:
     basename: postgres
     database: airflow
 
+persistence:
+  enabled: false
+  ## When enabled, define `storageClass` to set `volume.beta.kubernetes.io/storage-class`
+  ## Default: volume.alpha.kubernetes.io/storage-class: default
+  storageClass: default
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+
 flower:
   url_prefix: /flower
 

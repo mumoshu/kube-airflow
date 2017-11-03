@@ -153,3 +153,11 @@ spec:
             - configMapRef:
                 name: {{ .Values.airflow.prefix }}airflow-cfg
           args: ["worker"]
+      volumes:
+        - name: dags-data
+        {{- if .Values.airflow.persistence.enabled }}
+          persistentVolumeClaim:
+              claimName: {{ .Values.airflow.persistence.existingClaim | default (include "airflow.fullname" .) }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}
