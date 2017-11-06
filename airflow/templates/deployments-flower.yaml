@@ -1,0 +1,27 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Values.airflow.prefix -}}flower
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: airflow
+        tier: flower
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: {{ .Values.airflow.prefix -}}flower
+          image: {{ .Values.airflow.image }}
+          imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
+          env:
+            - name: FLOWER_PORT
+              value: "5555"
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.airflow.prefix }}airflow-cfg
+          ports:
+            - name: {{ .Values.airflow.prefix -}}flower
+              containerPort: 5555
+          args: ["flower"]

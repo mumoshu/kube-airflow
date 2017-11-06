@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Values.airflow.prefix -}}web
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: airflow
+        tier: web
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: {{ .Values.airflow.prefix -}}web
+          image: {{ .Values.airflow.image }}
+          imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.airflow.prefix }}airflow-cfg
+          ports:
+            - name: {{ .Values.airflow.prefix -}}web
+              containerPort: 8080
+          args: ["webserver"]
