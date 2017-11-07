@@ -111,6 +111,24 @@ Also keep in mind using git-sync may not be scalable at all in production if you
 The best way to deploy you DAG is to build a new docker image containing all the DAG and their
 dependencies. To do so, fork this project
 
+#### Airflow.cfg as ConfigMap
+
+By default, we use the configuration file `airflow.cfg` hardcoded in the docker image. This file
+uses a custom templating system to apply some environmnet variable and feed the airflow processes
+with (basically it is just some `sed`).
+
+If you want to use your own `airflow.cfg` file without having to rebuild a complete docker image, for example when testing new settings, there is a way to define this file in a Kubernetes configuration
+map:
+
+- you need to define your own `config.yaml` file you will feed `helm install -f` with
+- you need to enable the node `airflow.airflow_cfg.enable: true` to enable it
+- and define your `airflow.cfg` in the node `airflow.airflow_cfg.data`
+  You can see at `airflow/myconfig-with-airflowcfg-configmap.yaml` for an example on how to set it
+  in your `config.yaml` file
+- note it is important to keep the custom templating in your `airflow.cfg` (ex:
+  `{{ POSTGRES_CREDS }}`) or at least keep it aligned with the configuration applyied in your
+  Kubernetes Cluster.
+
 #### Embedded DAGs
 
 If you want more control on the way you deploy your DAGs, you can use embedded DAGs, where DAGs
