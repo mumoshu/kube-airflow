@@ -1,7 +1,9 @@
 # This file is just an example on how to override airflow.cfg from config.yaml
+# DO NOT USE IT DIRECTLY
 
 airflow:
   prefix: "af-"
+  url_prefix: /airflow
   ...
   airflow_cfg:
     enable: true
@@ -288,3 +290,17 @@ airflow:
     # formatting as supported by airflow normally.
 
 ...
+
+celery:
+  num_workers: 1
+
+ingress:
+  enabled: true
+  annotations:
+  host: ""
+  path:
+    web: /airflow
+    flower: /flower
+
+flower:
+  url_prefix: /flower
