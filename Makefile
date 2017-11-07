@@ -34,17 +34,26 @@ clean:
 helm-install:
 	helm repo update
 	helm install $(CHART_LOCATION) \
-                 --version=v0.1.0 \
-                 --name=$(HELM_APPLICATION_NAME) \
-                 --namespace=$(NAMESPACE) \
-                 --debug \
-                 -f $(HELM_CONFIG)
+	             --version=v0.1.0 \
+	             --name=$(HELM_APPLICATION_NAME) \
+	             --namespace=$(NAMESPACE) \
+	             --debug \
+	             -f $(HELM_CONFIG)
 
 helm-upgrade:
 	helm upgrade -f $(HELM_CONFIG) \
 	             --debug \
 	             $(HELM_APPLICATION_NAME) \
 	             $(CHART_LOCATION)
+
+helm-check:
+	helm install --dry_run \
+	            $(CHART_LOCATION) \
+	             --version=v0.1.0 \
+	             --name=$(HELM_APPLICATION_NAME) \
+	             --namespace=$(NAMESPACE) \
+	             --debug \
+	             -f $(HELM_CONFIG)
 
 helm-ls:
 	helm ls --all $(HELM_APPLICATION_NAME)
@@ -63,7 +72,7 @@ $(DOCKERFILE): $(BUILD_ROOT)
 	    -e 's/%%AIRFLOW_VERSION%%/'"$(AIRFLOW_VERSION)"'/g;' \
 	    -e 's#%%EMBEDDED_DAGS_LOCATION%%#'"$(EMBEDDED_DAGS_LOCATION)"'#g;' \
 	    -e 's#%%REQUIREMENTS_TXT_LOCATION%%#'"$(REQUIREMENTS_TXT_LOCATION)"'#g;' \
-	     Dockerfile.template > $(DOCKERFILE)
+	    Dockerfile.template > $(DOCKERFILE)
 
 $(ROOTFS): $(BUILD_ROOT)
 	mkdir -p rootfs
