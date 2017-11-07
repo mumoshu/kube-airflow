@@ -26,7 +26,7 @@ echo
 # Generate Fernet key
 sed -i "s/{{ FERNET_KEY }}/${FERNET_KEY}/" $AIRFLOW_HOME/airflow.cfg
 sed -i "s/{{ POSTGRES_HOST }}/${POSTGRES_HOST}/" $AIRFLOW_HOME/airflow.cfg
-sed -i "s/{{ POSTGRES_CREDS }}/${RABBITMQ_CREDS}/" $AIRFLOW_HOME/airflow.cfg
+sed -i "s/{{ POSTGRES_CREDS }}/${POSTGRES_CREDS}/" $AIRFLOW_HOME/airflow.cfg
 sed -i "s/{{ RABBITMQ_HOST }}/${RABBITMQ_HOST}/" $AIRFLOW_HOME/airflow.cfg
 sed -i "s/{{ RABBITMQ_CREDS }}/${RABBITMQ_CREDS}/" $AIRFLOW_HOME/airflow.cfg
 sed -i "s/{{ LOAD_DAGS_EXAMPLES }}/${LOAD_DAGS_EXAMPLES}/" $AIRFLOW_HOME/airflow.cfg
