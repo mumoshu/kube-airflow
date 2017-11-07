@@ -13,9 +13,9 @@ spec:
       restartPolicy: Always
       containers:
         - name: {{ .Values.airflow.prefix -}}worker
-          image: {{ .Values.airflow.image }}
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
-          {{- if .Values.airflow.persistence.enabled }}
+          image: "{{ .Values.airflow.image }}"
+          {{- if .Values.persistence.enabled }}
           volumeMounts:
             - name: dags-data
               mountPath: {{ .Values.airflow.dag_path }}
