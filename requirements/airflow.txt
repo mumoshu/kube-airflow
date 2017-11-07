@@ -9,4 +9,5 @@ ndg-httpsclient
 pyasn1
 psycopg2
 airflow[celery,postgresql,hive]
+Flask-WTF==0.14
 click

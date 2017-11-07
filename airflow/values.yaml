@@ -6,7 +6,6 @@ airflow:
   fernet_key: ""
   service:
     type: ClusterIP
-  baseUrl: "/airflow"
   dag_path: /dags
   init_retry_loop:
   image: mumoshu/kube-airflow:1.8.0.0-1.6.1

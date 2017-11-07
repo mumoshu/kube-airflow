@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ .Values.airflow.prefix -}}worker
+  name: "{{- .Values.airflow.prefix -}}worker"
 spec:
   replicas: {{ .Values.celery.num_workers }}
   template:
@@ -12,7 +12,7 @@ spec:
     spec:
       restartPolicy: Always
       containers:
-        - name: {{ .Values.airflow.prefix -}}worker
+        - name: "{{- .Values.airflow.prefix -}}worker"
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
           image: "{{ .Values.airflow.image }}"
           {{- if .Values.persistence.enabled }}
@@ -24,7 +24,7 @@ spec:
           #     - /localpath/to/dags:/usr/local/airflow/dags
           envFrom:
             - configMapRef:
-                name: {{ .Values.airflow.prefix }}airflow-cfg
+                name: "{{- .Values.airflow.prefix -}}airflow-cfg"
           args: ["worker"]
       volumes:
         - name: dags-data

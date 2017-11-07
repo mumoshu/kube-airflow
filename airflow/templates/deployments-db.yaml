@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ .Values.airflow.prefix -}}postgres
+  name: "{{- .Values.airflow.prefix -}}postgres"
 spec:
   replicas: 1
   template:
@@ -11,10 +11,10 @@ spec:
         tier: db
     spec:
       containers:
-        - name: {{ .Values.airflow.prefix -}}postgres
+        - name: "{{- .Values.airflow.prefix -}}postgres"
           image: postgres
           ports:
-            - name: {{ .Values.airflow.prefix -}}postgres
+            - name: "{{- .Values.airflow.prefix -}}postgres"
               containerPort: 5432
           env:
             - name: POSTGRES_USER

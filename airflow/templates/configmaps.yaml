@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: "{{ .Values.airflow.prefix -}}airflow-cfg"
+  name: "{{- .Values.airflow.prefix -}}airflow-cfg"
 data:
   AIRFLOW_HOME: "/usr/local/airflow"
   {{- if .Values.airflow.fernet_key }}

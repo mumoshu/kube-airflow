@@ -1,7 +1,7 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ .Values.airflow.prefix -}}rabbitmq
+  name: "{{- .Values.airflow.prefix -}}rabbitmq"
 spec:
   replicas: 1
   template:
@@ -12,12 +12,12 @@ spec:
     spec:
       restartPolicy: Always
       containers:
-        - name: {{ .Values.airflow.prefix -}}rabbitmq
+        - name: "{{- .Values.airflow.prefix -}}rabbitmq"
           image: rabbitmq:3-management
           ports:
-            - name: {{ .Values.airflow.prefix -}}management
+            - name: "{{- .Values.airflow.prefix -}}mgnt"
               containerPort: 15672
-            - name: {{ .Values.airflow.prefix -}}node
+            - name: "{{- .Values.airflow.prefix -}}node"
               containerPort: 5672
           env:
             - name: RABBITMQ_DEFAULT_USER
