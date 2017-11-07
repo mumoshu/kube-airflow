@@ -30,8 +30,8 @@ sed -i "s/{{ POSTGRES_CREDS }}/${RABBITMQ_CREDS}/" $AIRFLOW_HOME/airflow.cfg
 sed -i "s/{{ RABBITMQ_HOST }}/${RABBITMQ_HOST}/" $AIRFLOW_HOME/airflow.cfg
 sed -i "s/{{ RABBITMQ_CREDS }}/${RABBITMQ_CREDS}/" $AIRFLOW_HOME/airflow.cfg
 sed -i "s/{{ LOAD_DAGS_EXAMPLES }}/${LOAD_DAGS_EXAMPLES}/" $AIRFLOW_HOME/airflow.cfg
-sed -i "s/{{ FLOWER_URL_PREFIX }}/${FLOWER_URL_PREFIX}/" $AIRFLOW_HOME/airflow.cfg
-sed -i "s/{{ AIRFLOW_URL_PREFIX }}/${AIRFLOW_URL_PREFIX}/" $AIRFLOW_HOME/airflow.cfg
+sed -i "s#{{ FLOWER_URL_PREFIX }}#${FLOWER_URL_PREFIX}#" $AIRFLOW_HOME/airflow.cfg
+sed -i "s#{{ AIRFLOW_URL_PREFIX }}#${AIRFLOW_URL_PREFIX}#" $AIRFLOW_HOME/airflow.cfg
 
 # wait for rabbitmq
 if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ "$1" = "flower" ] ; then
