@@ -1,0 +1,18 @@
+{{- if .Values.airflow.airflow_cfg.enable -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{- .Values.airflow.prefix -}}airflow.cfg"
+data:
+  airflow.cfg: {{ .Values.airflow.airflow_cfg.data | quote }}
+  # bootstrap.sh is here simply to recopy the airflow.cfg into /usr/local/airflow/airflow.cfg
+  # We cannot mount only a file in kubernetes, when using a configmap, only a directory.
+  # since we do not want to loose all other scripts in /usr/local/airflow, we simply use
+  # /usr/local/airflow-cm as a proxy location
+  bootstrap.sh: |
+    #!/usr/bin/env bash
+
+    cp -fv /usr/local/airflow-cm/airflow.cfg /usr/local/airflow/airflow.cfg
+    cd /usr/local/airflow/
+    ./entrypoint.sh $@
+{{- end -}}

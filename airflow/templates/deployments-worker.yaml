@@ -19,13 +19,19 @@ spec:
           volumeMounts:
             - name: dags-data
               mountPath: {{ .Values.airflow.dag_path }}
-          {{- end -}}
+          {{- end }}
           # volumes:
           #     - /localpath/to/dags:/usr/local/airflow/dags
           envFrom:
             - configMapRef:
                 name: "{{- .Values.airflow.prefix -}}airflow-env"
           args: ["worker"]
+          {{- if .Values.airflow.airflow_cfg.enable }}
+          volumeMounts:
+            - mountPath: /usr/local/airflow-cm/
+              name: "{{ .Values.airflow.prefix -}}airflow-cfg"
+          command: ["bash", "/usr/local/airflow-cm/bootstrap.sh"]
+          {{- end }}
       volumes:
         - name: dags-data
         {{- if .Values.persistence.enabled }}
@@ -33,4 +39,9 @@ spec:
               claimName: {{ .Values.persistence.existingClaim | default (include "airflow.fullname" .) }}
         {{- else }}
           emptyDir: {}
-        {{- end -}}
+        {{- end }}
+        {{- if .Values.airflow.airflow_cfg.enable }}
+        - name: "{{ .Values.airflow.prefix -}}airflow-cfg"
+          configMap:
+            name: "{{ .Values.airflow.prefix -}}airflow.cfg"
+        {{ end -}}

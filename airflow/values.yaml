@@ -2,7 +2,7 @@ airflow:
   # common settings and setting for the webserver
   # For prefix, use only lower case alphanumeric characters, '-' or '.', and must start and end
   # with an alphanumeric character
-  prefix: " "
+  prefix: ""
   fernet_key: ""
   service:
     type: ClusterIP
@@ -13,6 +13,18 @@ airflow:
   image_pull_policy: Always
   # Set scheduler_num_runs to -1 to loop indefinitively
   scheduler_num_runs: "-1"
+  url_prefix: ""
+  # airflow-cfg allow you to override the whole content of airflow.cfg at once
+  # BEWARE of maintaining uniformity in your configuration, especially since the bootstrap script
+  # `entrypoint.sh` will not adapt the various settings accordingly to this configuration, such as
+  # rabbitmq/postgres creds/host, git-sync etc.
+  # If you choose to hardcode a complete file, just ensure you have the same configuration as
+  # defined here (remember the postgres/rabbitmq hostnames are prepended by a prefix defined in
+  # `airflow.prefix`). If you use templating you can still look at the example in
+  # `values-airflowcfg.yaml`.
+  airflow_cfg:
+    enable: false
+    data:
 
 celery:
   num_workers: 1
@@ -55,7 +67,7 @@ persistence:
 
 
 flower:
-  url_prefix: /flower
+  url_prefix: ""
 
 dags:
   # Use of git-sync: beware when using git-sync and airflow. If the scheduler reloads a dag in the

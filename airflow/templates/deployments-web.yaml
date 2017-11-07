@@ -21,4 +21,16 @@ spec:
           ports:
             - name: "{{- .Values.airflow.prefix -}}web"
               containerPort: 8080
+          {{- if .Values.airflow.airflow_cfg.enable }}
+          volumeMounts:
+            - mountPath: /usr/local/airflow-cm/
+              name: "{{ .Values.airflow.prefix -}}airflow-cfg"
+          command: ["bash", "/usr/local/airflow-cm/bootstrap.sh"]
+          {{- end }}
           args: ["webserver"]
+      {{- if .Values.airflow.airflow_cfg.enable }}
+      volumes:
+        - name: "{{ .Values.airflow.prefix -}}airflow-cfg"
+          configMap:
+            name: "{{ .Values.airflow.prefix -}}airflow.cfg"
+      {{ end -}}
