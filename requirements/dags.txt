@@ -2,15 +2,4 @@
 # installed inside the container during the container build, independently if you use embedded DAGs
 # of Git-sync.
 
-pytz==2015.7
-cryptography
-requests
-pyOpenSSL
-ndg-httpsclient
-pyasn1
-psycopg2
-Flask-WTF==0.14
 git+https://github.com/Stibbons/incubator-airflow@kube_executor_url_prefix_v1#egg=airflow
-click
-
-# add new dependecies bellow:

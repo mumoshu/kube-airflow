@@ -20,7 +20,7 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: "{{- .Values.airflow.prefix -}}-flower"
+  name: "{{- .Values.airflow.prefix -}}flower"
   annotations:
     {{ range $key, $value := .Values.ingress.annotations }}
     {{ $key }}: {{ $value | quote }}

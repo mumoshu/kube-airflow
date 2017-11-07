@@ -8,6 +8,7 @@ pyOpenSSL
 ndg-httpsclient
 pyasn1
 psycopg2
+celery
 airflow[celery,postgresql,hive]
 Flask-WTF==0.14
 click
