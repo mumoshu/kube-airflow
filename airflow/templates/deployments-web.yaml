@@ -17,7 +17,7 @@ spec:
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
           envFrom:
             - configMapRef:
-                name: "{{- .Values.airflow.prefix -}}airflow-cfg"
+                name: "{{- .Values.airflow.prefix -}}airflow-env"
           ports:
             - name: "{{- .Values.airflow.prefix -}}web"
               containerPort: 8080

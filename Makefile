@@ -10,7 +10,7 @@ ALIAS ?= $(REPOSITORY):$(AIRFLOW_VERSION)-$(KUBECTL_VERSION)
 BUILD_ROOT ?= build/$(TAG)
 DOCKERFILE ?= $(BUILD_ROOT)/Dockerfile
 ROOTFS ?= $(BUILD_ROOT)/rootfs
-AIRFLOW_CONF ?= $(BUILD_ROOT)/config/airflow.cfg.in
+AIRFLOW_CONF ?= $(BUILD_ROOT)/config/airflow.cfg
 ENTRYPOINT_SH ?= $(BUILD_ROOT)/script/entrypoint.sh
 GIT_SYNC ?= $(BUILD_ROOT)/script/git-sync
 DAGS ?= $(BUILD_ROOT)/dags
@@ -71,7 +71,7 @@ $(ROOTFS): $(BUILD_ROOT)
 
 $(AIRFLOW_CONF): $(BUILD_ROOT)
 	mkdir -p $(shell dirname $(AIRFLOW_CONF))
-	cp config/airflow.cfg.in $(AIRFLOW_CONF)
+	cp config/airflow.cfg $(AIRFLOW_CONF)
 
 $(ENTRYPOINT_SH): $(BUILD_ROOT)
 	mkdir -p $(shell dirname $(ENTRYPOINT_SH))

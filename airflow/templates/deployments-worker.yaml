@@ -24,7 +24,7 @@ spec:
           #     - /localpath/to/dags:/usr/local/airflow/dags
           envFrom:
             - configMapRef:
-                name: "{{- .Values.airflow.prefix -}}airflow-cfg"
+                name: "{{- .Values.airflow.prefix -}}airflow-env"
           args: ["worker"]
       volumes:
         - name: dags-data

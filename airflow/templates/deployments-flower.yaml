@@ -20,7 +20,7 @@ spec:
               value: "5555"
           envFrom:
             - configMapRef:
-                name: "{{- .Values.airflow.prefix -}}airflow-cfg"
+                name: "{{- .Values.airflow.prefix -}}airflow-env"
           ports:
             - name: "{{- .Values.airflow.prefix -}}flower"
               containerPort: 5555
