@@ -2,4 +2,4 @@
 # installed inside the container during the container build, independently if you use embedded DAGs
 # of Git-sync.
 
-git+https://github.com/Stibbons/incubator-airflow@kube_executor_url_prefix_v1#egg=airflow
+ruamel-yaml

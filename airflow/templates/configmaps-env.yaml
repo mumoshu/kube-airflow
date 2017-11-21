@@ -27,3 +27,4 @@ data:
   GIT_SYNC_DEBUG: "{{ .Values.dags.git_sync_debug }}"
   {{ end }}
   LOAD_DAGS_EXAMPLES: "{{ .Values.dags.load_examples }}"
+  PICKLE_DAG: "{{ .Values.dags.pickle_dag }}"

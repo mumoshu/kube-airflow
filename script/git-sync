@@ -47,7 +47,7 @@ def get_repo_at(dest):
 
     return current_remote.lower(), current_branch.lower()
 
-def setup_repo(repo, dest, branch):
+def setup_repo(repo, dest, branch, force):
     """
     Clones `branch` of remote `repo` to `dest`, if it doesn't exist already.
     Raises an error if a different repo or branch is found.
@@ -89,17 +89,17 @@ def setup_repo(repo, dest, branch):
         # ahead_status: commited but not pushed
         modified_status = sh(shlex.split('git status -s'), cwd=dest)
         ahead_status = sh(shlex.split('git status -sb'), cwd=dest)[3:]
-        if modified_status:
+        if not force and modified_status:
             raise ValueError(
                 'There are uncommitted changes at {dest} that syncing '
                 'would overwrite'.format(**locals()))
-        if '[ahead ' in ahead_status:
+        if not force and '[ahead ' in ahead_status:
             raise ValueError(
                 'This branch is ahead of the requested repo and syncing would '
                 'overwrite the changes: {ahead_status}'.format(**locals()))
 
 
-def sync_repo(repo, dest, branch, rev):
+def sync_repo(repo, dest, branch, rev, force):
     """
     Syncs `branch` of remote `repo` (at `rev`) to `dest`.
     Assumes `dest` has already been cloned.
@@ -109,6 +109,8 @@ def sync_repo(repo, dest, branch, rev):
     click.echo('Fetched {branch}: {output}'.format(**locals()))
 
     # reset working copy
+    if force:
+        sh(['git', 'clean', '-xdf'], cwd=dest)
     if not rev:
         output = sh(['git', 'reset', '--hard', 'origin/' + branch], cwd=dest)
     else:
@@ -146,7 +148,9 @@ def sync_repo(repo, dest, branch, rev):
                     'GIT_SYNC_REV.'))
 @click.option('--debug', envvar='GIT_SYNC_DEBUG', is_flag=True,
               help='Print tracebacks on error.')
-def git_sync(repo, dest, branch, rev, wait, run_once, debug):
+@click.option('--force', envvar='GIT_SYNC_FORCE', is_flag=True,
+              help='Force overwrite even if there are existing local changes')
+def git_sync(repo, dest, branch, rev, wait, run_once, debug, force):
     """
     Periodically syncs a remote git repository to a local directory. The sync
     is one-way; any local changes will be lost.
@@ -164,9 +168,9 @@ def git_sync(repo, dest, branch, rev, wait, run_once, debug):
     elif not branch:
         branch = 'master'
 
-    setup_repo(repo, dest, branch)
+    setup_repo(repo, dest, branch, force)
     while True:
-        sync_repo(repo, dest, branch, rev)
+        sync_repo(repo, dest, branch, rev, force)
         if run_once:
             break
         click.echo('Waiting {wait} seconds...'.format(**locals()))

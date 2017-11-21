@@ -65,3 +65,16 @@ spec:
       name: "{{- .Values.airflow.prefix -}}pflower"
       targetPort: "{{- .Values.airflow.prefix -}}flower"
       nodePort: 32081
+---
+# Headless service for stable DNS entries of StatefulSet members.
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{- .Values.airflow.prefix -}}workers"
+spec:
+  ports:
+    - name: "{{- .Values.airflow.prefix -}}wlog"
+      port: 8793
+  clusterIP: None
+  selector:
+    app: airflow

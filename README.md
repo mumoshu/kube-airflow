@@ -1,31 +1,23 @@
-# kube-airflow
-[![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/mumoshu/kube-airflow/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/mumoshu/kube-airflow.svg?maxAge=2592000)]()
-[![Docker Stars](https://img.shields.io/docker/stars/mumoshu/kube-airflow.svg?maxAge=2592000)]()
+# kube-airflow (Celery Executor)
+[![Docker Hub](https://img.shields.io/badge/docker-ready-blue.svg)](https://hub.docker.com/r/stibbons31/kube-airflow/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/stibbons31/kube-airflow.svg?maxAge=2592000)]()
+[![Docker Stars](https://img.shields.io/docker/stars/stibbons31/kube-airflow.svg?maxAge=2592000)]()
 
-kube-airflow provides a set of tools to run Airflow in a Kubernetes cluster.
-This is useful when you'd want:
-
-* Easy high availability of the Airflow scheduler
-  * [Running multiple schedulers for high availability isn't safe](https://groups.google.com/forum/#!topic/airbnb_airflow/-1wKa3OcwME) so it isn't the way to go in the first place. [Someone in the internet tried to implement a wrapper](https://stackoverflow.com/a/39595535) to implement leader election on top of the scheduler so that only one scheduler executes the tasks at a time. It is possbile but can't we just utilize a kind of cluster manager here? This is where Kubernetes comes into play.
-* Easy parallelism of task executions
-  * The common way to scale out workers in Airflow is to utilize Celery. However, managing a H/A backend database and Celery workers just for parallelising task executions sounds like a hassle. This is where Kubernetes comes into play, again. If you already had a K8S cluster, just let K8S manage them for you.
-  * If you have ever considered to avoid Celery for task parallelism, yes, K8S can still help you for a while. Just keep using `LocalExecutor` instead of `CeleryExecutor` and delegate actual tasks to Kubernetes by calling e.g. `kubectl run --restart=Never ...` from your tasks. It will work until the concurrent `kubectl run` executions(up to the concurrency implied by scheduler's `max_threads` and LocalExecutor's `parallelism`. See [this SO question](https://stackoverflow.com/questions/38200666/airflow-parallelism) for gotchas) consumes all the resources a single airflow-scheduler pod provides, which will be after the pretty long time.
-
-This repository contains:
+This repository contains a forked version of [mumoshu/kube-airflow](https://github.com/mumoshu/kube-airflow) providing a production ready Helm
+chart for running Airflow with the Celery executor on a Kubernetes Cluster.
 
 * **Dockerfile(.template)** of [airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/) images published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 * **airflow.all.yaml** for manual creating Kubernetes services and deployments to run Airflow on Kubernetes
-* **Helm Chart** for deployments using Helm
+* **Helm Chart** in `./airflow` for deployments using Helm
 
 ## Informations
 
+* Fork of [mumoshu/kube-airflow](https://github.com/mumoshu/kube-airflow)
 * Highly inspired by the great work [puckel/docker-airflow](https://github.com/puckel/docker-airflow)
-* Based on Debian Jessie official Image [debian:stretch](https://registry.hub.docker.com/_/debian/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [RabbitMQ](https://hub.docker.com/_/rabbitmq/) as queue
+* Based on Debian Stretch official Image [debian:stretch](https://registry.hub.docker.com/_/debian/) and uses the official [Postgres](https://hub.docker.com/_/postgres/) as backend and [RabbitMQ](https://hub.docker.com/_/rabbitmq/) as queue
 * Following the Airflow release from [Python Package Index](https://pypi.python.org/pypi/airflow)
 
 ## Manual Installation
-
 
 Create all the deployments and services to run Airflow on Kubernetes:
 
@@ -47,7 +39,7 @@ and services for:
 * airflow-webserver
 * airflow-flower
 
-## Helm Deployment
+## Helm Deployment (recommended)
 
 Ensure your helm installation is done, you may need to have `TILLER_NAMESPACE` set as
 environment variable.
@@ -72,12 +64,12 @@ the `config.yaml` depending on your setup.
 ### Prefix
 
 This Helm chart allows using a "prefix" string that will be added to every Kubernetes names.
-That allows instantiating several, independent Airflow in the same namespace.
+That allows instantiating several, independent Airflow clusters in the same namespace.
 
 Note:
 
     Do NOT use characters such as " (double quote), ' (simple quote), / (slash) or \ (backslash)
-    in your passwords and prefix
+    in your passwords and prefix and keep it as small as possible.
 
 ### DAGs deployment: embedded DAGs or git-sync
 
@@ -86,13 +78,13 @@ This chart provide basically two way of deploying DAGs in your Airflow installat
 - embedded DAGs
 - Git-Sync
 
-An enhancement can be to support Persistant Storage. If you are willing to contribute, do not
-hesitate to do a Pull Request !
+This helm chart provide support for Persistant Storage but not for sidecar git-sync pod.
+If you are willing to contribute, do not hesitate to do a Pull Request !
 
-#### Using Git-Sync
+#### Using embedded Git-Sync
 
-Git-sync is the easiest way to automatically update your DAGs. It simply check periodially (by
-default every minute) a Git project on a given branch and check this new version when available.
+Git-sync is the easiest way to automatically update your DAGs. It simply checks periodically (by
+default every minute) a Git project on a given branch and check this new version out when available.
 Scheduler and worker see changes almost real-time. There is no need to other tool and complex
 rolling-update procedure.
 
@@ -128,6 +120,13 @@ map:
 - note it is important to keep the custom templating in your `airflow.cfg` (ex:
   `{{ POSTGRES_CREDS }}`) or at least keep it aligned with the configuration applyied in your
   Kubernetes Cluster.
+
+#### Worker Statefulset
+
+As you can see, Celery workers uses StatefulSet instead of deployment. It is used to freeze their
+DNS using a Kubernetes Headless Service, and allow the webserver to requests the logs from each
+workers individually. This requires to expose a port (8793) and ensure the pod DNS is accessible to
+the web server pod, which is why StatefulSet is for.
 
 #### Embedded DAGs
 

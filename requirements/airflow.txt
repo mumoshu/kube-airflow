@@ -11,5 +11,6 @@ psycopg2
 celery>=4.0.0
 flower>=0.7.3
 airflow[celery,postgresql,hive]
+kubernetes
 Flask-WTF==0.14
 click

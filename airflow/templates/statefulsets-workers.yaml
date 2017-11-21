@@ -1,8 +1,17 @@
-apiVersion: extensions/v1beta1
-kind: Deployment
+# Workers are not in deployment, but in StatefulSet, to allow each worker expose a mini-server
+# that only serve logs, that will be used by the web server.
+
+apiVersion: apps/v1beta1
+kind: StatefulSet
 metadata:
   name: "{{- .Values.airflow.prefix -}}worker"
 spec:
+  # selector:
+  #   matchLabels:
+  #     app: airflow
+  serviceName: "{{- .Values.airflow.prefix -}}workers"
+  updateStrategy:
+    type: RollingUpdate
   replicas: {{ .Values.celery.num_workers }}
   template:
     metadata:
@@ -11,6 +20,7 @@ spec:
         tier: worker
     spec:
       restartPolicy: Always
+      terminationGracePeriodSeconds: 30
       containers:
         - name: "{{- .Values.airflow.prefix -}}worker"
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
@@ -32,6 +42,9 @@ spec:
               name: "{{ .Values.airflow.prefix -}}airflow-cfg"
           command: ["bash", "/usr/local/airflow-cm/bootstrap.sh"]
           {{- end }}
+          ports:
+            - name: "{{- .Values.airflow.prefix -}}wlog"
+              containerPort: 8793
       volumes:
         - name: dags-data
         {{- if .Values.persistence.enabled }}

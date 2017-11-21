@@ -4,7 +4,7 @@ kind: Ingress
 metadata:
   name: "{{- .Values.airflow.prefix -}}airflow"
   annotations:
-    {{ range $key, $value := .Values.ingress.annotations }}
+    {{ range $key, $value := .Values.ingress.annotations.web }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:
@@ -22,7 +22,7 @@ kind: Ingress
 metadata:
   name: "{{- .Values.airflow.prefix -}}flower"
   annotations:
-    {{ range $key, $value := .Values.ingress.annotations }}
+    {{ range $key, $value := .Values.ingress.annotations.flower }}
     {{ $key }}: {{ $value | quote }}
     {{- end }}
 spec:

@@ -11,8 +11,10 @@ airflow:
   image: mumoshu/kube-airflow:1.8.0.0-1.6.1
   # image_pull_policy: Always or IfNotPresent
   image_pull_policy: Always
-  # Set scheduler_num_runs to -1 to loop indefinitively
-  scheduler_num_runs: "-1"
+  # Set scheduler_num_runs to control how the schduler behaves:
+  #   -1 will let him looping indefinitively but it will never update the DAG
+  #   1 will have the scheduler quit after each execution, kubernetes will restart it
+  scheduler_num_runs: "1"
   url_prefix: ""
   # airflow-cfg allow you to override the whole content of airflow.cfg at once
   # BEWARE of maintaining uniformity in your configuration, especially since the bootstrap script
@@ -32,6 +34,40 @@ celery:
 ingress:
   enabled: false
   annotations:
+    # Define the annotation here to configure rewriting rules related to your Load balancer
+    #
+    # Please note their is a small difference between the way Airflow Web server and Flower handles
+    # url_prefix in HTTP requests:
+    #  - airflow webserver handles it completely, just ask your load balancer to give the HTTP
+    #    header like the requested URL
+    #  - Flower wants HTTP header to behave like there was no URL prefix, and but still form the
+    #    right URL in generated pages.
+    #
+    #    Extracted from the Flower documentation:
+    #    (https://github.com/mher/flower/blob/master/docs/config.rst#url_prefix)
+    #
+    #        To access Flower on http://example.com/flower run it with:
+    #            flower --url_prefix=flower
+    #
+    #        Use the following nginx configuration:
+    #            server {
+    #              listen 80;
+    #              server_name example.com;
+    #
+    #              location /flower/ {
+    #                rewrite ^/flower/(.*)$ /$1 break;
+    #                proxy_pass http://example.com:5555;
+    #                proxy_set_header Host $host;
+    #              }
+    #            }
+    web:
+      # Example for Traefik:
+      # traefik.frontend.rule.type: PathPrefix
+      # kubernetes.io/ingress.class: traefik
+    flower:
+      # Example for Traefik:
+      # traefik.frontend.rule.type: PathPrefixStrip
+      # kubernetes.io/ingress.class: traefik
   host: ""
   path:
     web: /airflow
@@ -70,6 +106,8 @@ flower:
   url_prefix: ""
 
 dags:
+  # pickle_dag: send DAG using pickle from the scheduler to the worker
+  pickle_dag: true
   # Use of git-sync: beware when using git-sync and airflow. If the scheduler reloads a dag in the
   # middle of a dagrun then the dagrun will actually start using the new version of the dag in the
   # middle of execution.
