@@ -21,7 +21,7 @@ SAVED_IMAGE ?= $(DOCKER_CACHE)/image-$(AIRFLOW_VERSION)-$(KUBECTL_VERSION).tar
 
 NAMESPACE ?= airflow-dev
 HELM_APPLICATION_NAME ?= airflow
-HELM_VALUES ?= values.yaml
+HELM_VALUES ?= airflow/values.yaml
 CHART_LOCATION ?= ./airflow
 EMBEDDED_DAGS_LOCATION ?= "./dags"
 REQUIREMENTS_TXT_LOCATION ?= "requirements/dags.txt"

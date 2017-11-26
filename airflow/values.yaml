@@ -1,13 +1,26 @@
+# Duplicate this file and put your customization here
+
+# common settings and setting for the webserver
 airflow:
-  # common settings and setting for the webserver
+  # Prefix all kubernetes name
   # For prefix, use only lower case alphanumeric characters, '-' or '.', and must start and end
   # with an alphanumeric character
+  # Note:
+  #   do NOT use characters such as " (double quote), ' (simple quote), / (slash) or \ (backslash)
+  #   in your passwords
   prefix: ""
+  # You will need to define your frenet key:
+  # Generate fernet_key with:
+  #    python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"
+  # fernet_key: ABCDABCDABCDABCDABCDABCDABCDABCDABCDABCD
   fernet_key: ""
   service:
     type: ClusterIP
+  # mount path for persistant volume
   dag_path: /dags
+  # set the max number of retries during container initialization
   init_retry_loop:
+  # base image for webserver/scheduler/workers
   image: mumoshu/kube-airflow:1.8.0.0-1.6.1
   # image_pull_policy: Always or IfNotPresent
   image_pull_policy: Always
@@ -15,7 +28,12 @@ airflow:
   #   -1 will let him looping indefinitively but it will never update the DAG
   #   1 will have the scheduler quit after each execution, kubernetes will restart it
   scheduler_num_runs: "1"
-  url_prefix: ""
+  # prefix to the endpoint of the webserver
+  # Ex: http://mycompany.com/airflow
+  # url_prefix is "/airflow"
+  url_prefix: "/airflow"
+
+  # If you want to override `airflow.cfg`, you can set it in `airflow.airflow_cfg.data`
   # airflow-cfg allow you to override the whole content of airflow.cfg at once
   # BEWARE of maintaining uniformity in your configuration, especially since the bootstrap script
   # `entrypoint.sh` will not adapt the various settings accordingly to this configuration, such as
@@ -26,22 +44,31 @@ airflow:
   # `values-airflowcfg.yaml`.
   airflow_cfg:
     enable: false
-    data:
+    data: |
+      #     [core]
+      #     # The home folder for airflow, default is ~/airflow
+      #     airflow_home = /usr/local/airflow
+      #
+      #     ...
+      #
+      # (see a more complete example `airflow/myconfig-with-airflowcfg-configmap.yaml`)
 
 celery:
+  # Number of celery workers to initialize
   num_workers: 1
 
 ingress:
+  # enable ingress
   enabled: false
   annotations:
     # Define the annotation here to configure rewriting rules related to your Load balancer
     #
     # Please note their is a small difference between the way Airflow Web server and Flower handles
     # url_prefix in HTTP requests:
-    #  - airflow webserver handles it completely, just ask your load balancer to give the HTTP
-    #    header like the requested URL
-    #  - Flower wants HTTP header to behave like there was no URL prefix, and but still form the
-    #    right URL in generated pages.
+    #  - airflow webserver handles it completely, just let your load balancer to give the HTTP
+    #    header like the requested URL (no special configuration neeed)
+    #  - Flower wants HTTP header to behave like there was no URL prefix, and but still generates
+    #    the right URL in html pages.
     #
     #    Extracted from the Flower documentation:
     #    (https://github.com/mher/flower/blob/master/docs/config.rst#url_prefix)
@@ -68,10 +95,17 @@ ingress:
       # Example for Traefik:
       # traefik.frontend.rule.type: PathPrefixStrip
       # kubernetes.io/ingress.class: traefik
+  # hostname for both endpoint
   host: ""
   path:
+    # if web is '/airflow':
+    #  - UI will be accessible to '/airflow/admin'
+    #  - Healthcheck is at 'http://mycompany.com/airflow/health'
+    #  - api is at 'http://mycompany.com/airflow/api'
     web: /airflow
-    flower: /flower
+    # if flower is '/airflow/flower':
+    #  - api is at 'http://mycompany.com/airflow/flower'
+    flower: /airflow/flower
 
 db:
   rabbitmq:
@@ -103,7 +137,10 @@ persistence:
 
 
 flower:
-  url_prefix: ""
+  # Url prefix for the endpoint of Flower
+  # Ex: http://mycompany.com/airflow/flower
+  # url_prefix is /airflow/flower
+  url_prefix: "/flower"
 
 dags:
   # pickle_dag: send DAG using pickle from the scheduler to the worker
@@ -116,9 +153,12 @@ dags:
   # - using explicit locking, ie never pull down a new dag if a dagrun is in progress
   # - make dags immutable, never modify your dag always make a new one
   git_sync_enabled: false
+  # url to clone the git repository
   git_repo:
+  # branch name
   git_branch: master
   poll_interval_sec: 60
+  # print debug logs
   git_sync_debug: false
   # Disable Load examples as soon as you enable git_repo
   load_examples: true
