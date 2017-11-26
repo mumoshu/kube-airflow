@@ -21,7 +21,7 @@ SAVED_IMAGE ?= $(DOCKER_CACHE)/image-$(AIRFLOW_VERSION)-$(KUBECTL_VERSION).tar
 
 NAMESPACE ?= airflow-dev
 HELM_APPLICATION_NAME ?= airflow
-HELM_CONFIG ?= config.yaml
+HELM_VALUES ?= values.yaml
 CHART_LOCATION ?= ./airflow
 EMBEDDED_DAGS_LOCATION ?= "./dags"
 REQUIREMENTS_TXT_LOCATION ?= "requirements/dags.txt"
@@ -32,16 +32,8 @@ clean:
 	rm -Rf build
 
 helm-install:
-	helm repo update
-	helm install $(CHART_LOCATION) \
-	             --version=v0.1.0 \
-	             --name=$(HELM_APPLICATION_NAME) \
-	             --namespace=$(NAMESPACE) \
-	             --debug \
-	             -f $(HELM_CONFIG)
-
-helm-upgrade:
-	helm upgrade -f $(HELM_CONFIG) \
+	helm upgrade -f $(HELM_VALUES) \
+	             --install \
 	             --debug \
 	             $(HELM_APPLICATION_NAME) \
 	             $(CHART_LOCATION)
@@ -53,7 +45,7 @@ helm-check:
 	             --name=$(HELM_APPLICATION_NAME) \
 	             --namespace=$(NAMESPACE) \
 	             --debug \
-	             -f $(HELM_CONFIG)
+	             -f $(HELM_VALUES)
 
 helm-ls:
 	helm ls --all $(HELM_APPLICATION_NAME)

@@ -46,15 +46,7 @@ environment variable.
 
 Deploy to Kubernetes using:
 
-    make helm-install NAMESPACE=airflow
-
-Upgrade your installation with:
-
-    make helm-upgrade
-
-Remove from the cluster using:
-
-    make helm-uninstall
+    make helm-install NAMESPACE=yournamespace HELM_VALUES=/path/to/you/values.yaml
 
 ### Helm ingresses
 
