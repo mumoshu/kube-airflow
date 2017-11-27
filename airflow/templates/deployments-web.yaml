@@ -3,12 +3,12 @@ kind: Deployment
 metadata:
   name: "{{- .Values.airflow.prefix -}}web"
 spec:
-  replicas: 1
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 1
-      maxUnavailable: 1
+      maxUnavailable: 2
   template:
     metadata:
       labels:
@@ -33,6 +33,12 @@ spec:
           command: ["bash", "/usr/local/airflow-cm/bootstrap.sh"]
           {{- end }}
           args: ["webserver"]
+          livenessProbe:
+            httpGet:
+              path: "{{ .Values.airflow.url_prefix }}/health"
+              port: "{{- .Values.airflow.prefix -}}web"
+            initialDelaySeconds: 120
+            periodSeconds: 10
       {{- if .Values.airflow.airflow_cfg.enable }}
       volumes:
         - name: "{{ .Values.airflow.prefix -}}airflow-cfg"
