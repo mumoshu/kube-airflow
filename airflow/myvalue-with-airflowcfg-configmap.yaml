@@ -12,23 +12,7 @@ airflow:
     # The home folder for airflow, default is ~/airflow
     airflow_home = /usr/local/airflow
 
-    # The folder where your airflow pipelines live, most likely a
-    # subfolder in a code repository
-    dags_folder = /usr/local/airflow/dags
-
-    # The folder where airflow should store its log files. This location
-    base_log_folder = /usr/local/airflow/logs
-
-    # Airflow can store logs remotely in AWS S3 or Google Cloud Storage. Users
-    # must supply a remote location URL (starting with either 's3://...' or
-    # 'gs://...') and an Airflow connection id that provides access to the storage
-    # location.
-    remote_base_log_folder =
-    remote_log_conn_id =
-    # Use server-side encryption for logs stored in S3
-    encrypt_s3_logs = False
-    # deprecated option for remote log storage, use remote_base_log_folder instead!
-    # s3_log_folder =
+    ...
 
     # The executor class that airflow should use. Choices include
     # SequentialExecutor, LocalExecutor, CeleryExecutor
@@ -73,11 +57,7 @@ airflow:
     # Secret key to save connection passwords in the db
     fernet_key = {{ FERNET_KEY }}
 
-    # Whether to disable pickling dags
-    donot_pickle = False
-
-    # How long before timing out a python file import while filling the DagBag
-    dagbag_import_timeout = 30
+    ...
 
     [webserver]
     # The base url of your website as airflow cannot guess what domain or
@@ -94,42 +74,7 @@ airflow:
     # The port on which to run the web server
     web_server_port = 8080
 
-    # The time the gunicorn webserver waits before timing out on a worker
-    web_server_worker_timeout = 120
-
-    # Secret key used to run your flask app
-    secret_key = temporary_key
-
-    # Number of workers to run the Gunicorn web server
-    workers = 4
-
-    # The worker class gunicorn should use. Choices include
-    # sync (default), eventlet, gevent
-    worker_class = sync
-
-    # Expose the configuration file in the web server
-    expose_config = true
-
-    # Set to true to turn on authentication : http://pythonhosted.org/airflow/installation.html#web-authentication
-    authenticate = False
-
-    # Filter the list of dags by owner name (requires authentication to be enabled)
-    filter_by_owner = False
-
-    [email]
-    email_backend = airflow.utils.send_email_smtp
-
-    [smtp]
-    # If you want airflow to send emails on retries, failure, and you want to
-    # the airflow.utils.send_email function, you have to configure an smtp
-    # server here
-    smtp_host = localhost
-    smtp_starttls = True
-    smtp_ssl = False
-    smtp_user = airflow
-    smtp_port = 25
-    smtp_password = airflow
-    smtp_mail_from = airflow@airflow.local
+    ...
 
     [celery]
     # This section only applies if you are using the CeleryExecutor in
@@ -166,128 +111,7 @@ airflow:
     # The root URL for Flower
     flower_url_prefix = {{ FLOWER_URL_PREFIX }}
 
-    # Default queue that tasks get assigned to and that worker listen on.
-    default_queue = default
-
-    [scheduler]
-    # Task instances listen for external kill signal (when you clear tasks
-    # from the CLI or the UI), this defines the frequency at which they should
-    # listen (in seconds).
-    job_heartbeat_sec = 5
-
-    # The scheduler constantly tries to trigger new tasks (look at the
-    # scheduler section in the docs for more information). This defines
-    # how often the scheduler should run (in seconds).
-    scheduler_heartbeat_sec = 5
-
-    # Statsd (https://github.com/etsy/statsd) integration settings
-    # statsd_on =  False
-    # statsd_host =  localhost
-    # statsd_port =  8125
-    # statsd_prefix = airflow
-
-    # The scheduler can run multiple threads in parallel to schedule dags.
-    # This defines how many threads will run. However airflow will never
-    # use more threads than the amount of cpu cores available.
-    max_threads = 2
-
-    [mesos]
-    # Mesos master address which MesosExecutor will connect to.
-    master = localhost:5050
-
-    # The framework name which Airflow scheduler will register itself as on mesos
-    framework_name = Airflow
-
-    # Number of cpu cores required for running one task instance using
-    # 'airflow run <dag_id> <task_id> <execution_date> --local -p <pickle_id>'
-    # command on a mesos slave
-    task_cpu = 1
-
-    # Memory in MB required for running one task instance using
-    # 'airflow run <dag_id> <task_id> <execution_date> --local -p <pickle_id>'
-    # command on a mesos slave
-    task_memory = 256
-
-    # Enable framework checkpointing for mesos
-    # See http://mesos.apache.org/documentation/latest/slave-recovery/
-    checkpoint = False
-
-    # Failover timeout in milliseconds.
-    # When checkpointing is enabled and this option is set, Mesos waits
-    # until the configured timeout for
-    # the MesosExecutor framework to re-register after a failover. Mesos
-    # shuts down running tasks if the
-    # MesosExecutor framework fails to re-register within this timeframe.
-    # failover_timeout = 604800
-
-    # Enable framework authentication for mesos
-    # See http://mesos.apache.org/documentation/latest/configuration/
-    authenticate = False
-
-    # Mesos credentials, if authentication is enabled
-    # default_principal = admin
-    # default_secret = admin
-
-
-    [kubernetes]
-    # The repository and tag of the Kubernetes Image for the Worker to Run
-    worker_container_repository =
-    worker_container_tag =
-
-    # If True (default), worker pods will be deleted upon termination
-    delete_worker_pods = True
-
-    # The Kubernetes namespace where airflow workers should be created. Defaults to `default`
-    namespace = default
-
-    # The name of the Kubernetes ConfigMap Containing the Airflow Configuration (this file)
-    airflow_configmap =
-
-    # For either git sync or volume mounted DAGs, the worker will look in this subpath for DAGs
-    dags_volume_subpath =
-
-    # For DAGs mounted via a volume claim (mutually exclusive with volume claim)
-    dags_volume_claim =
-
-    # Git credentials and repository for DAGs mounted via Git (mutually exclusive with volume claim)
-    git_repo =
-    git_branch =
-    git_user =
-    git_password =
-
-    # For cloning DAGs from git repositories into volumes: https://github.com/kubernetes/git-sync
-    git_sync_container_repository = gcr.io/google-containers/git-sync-amd64
-    git_sync_container_tag = v2.0.5
-    git_sync_init_container_name = git-sync-clone
-
-    # The name of the Kubernetes service account to be associated with airflow workers, if any.
-    # Service accounts are required for workers that require access to secrets or cluster resources.
-    # See the Kubernetes RBAC documentation for more:
-    #   https://kubernetes.io/docs/admin/authorization/rbac/
-    worker_service_account_name =
-
-    # Any image pull secrets to be given to worker pods, If more than one secret is
-    # required, provide a comma separated list: secret_a,secret_b
-    image_pull_secrets =
-
-    # GCP Service Account Keys to be provided to tasks run on Kubernetes Executors
-    # Should be supplied in the format: key-name-1:key-path-1,key-name-2:key-path-2
-    gcp_service_account_keys =
-
-    [kubernetes_secrets]
-    # The scheduler mounts the following secrets into your workers as they are launched by the
-    # scheduler. You may define as many secrets as needed and the kubernetes launcher will parse the
-    # defined secrets and mount them as secret environment variables in the launched workers.
-    # Secrets in this section are defined as follows
-    #     <environment_variable_mount> = <kubernetes_secret_object>:<kubernetes_secret_key>
-    #
-    # For example if you wanted to mount a kubernetes secret key named `postgres_password` from the
-    # kubernetes secret object `airflow-secret` as the environment variable `POSTGRES_PASSWORD` into
-    # your workers you would follow the following format:
-    #     POSTGRES_PASSWORD = airflow-secret:postgres_credentials
-    #
-    # Additionally you may override worker airflow settings with the AIRFLOW__<SECTION>__<KEY>
-    # formatting as supported by airflow normally.
+    ...
 
 ...
 

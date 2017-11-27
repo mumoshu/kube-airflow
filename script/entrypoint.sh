@@ -74,8 +74,4 @@ if [ ! -z $GIT_SYNC_REPO ]; then
     $AIRFLOW_HOME/git-sync --dest $AIRFLOW_HOME/dags --force &
 fi
 
-if [ "$PICKLE_DAG" = "true" ] && [ "$1" = "scheduler" ] ; then
-    $CMD "$@ -p"
-else
-    $CMD "$@"
-fi
+$CMD "$@"

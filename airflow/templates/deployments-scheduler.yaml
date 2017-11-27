@@ -24,7 +24,7 @@ spec:
               name: "{{- .Values.airflow.prefix -}}airflow-cfg"
           command: ["bash", "/usr/local/airflow-cm/bootstrap.sh"]
           {{- end }}
-          args: ["scheduler", "-n", "{{ .Values.airflow.scheduler_num_runs }}"]
+          args: ["scheduler", "-n", "{{ .Values.airflow.scheduler_num_runs }}", "-p"]
       volumes:
         - name: dags-data
         {{- if .Values.persistence.enabled }}
