@@ -12,6 +12,9 @@ spec:
   serviceName: "{{- .Values.airflow.prefix -}}workers"
   updateStrategy:
     type: RollingUpdate
+  # Use experimental burst mode for faster StatefulSet scaling
+  #   https://github.com/kubernetes/kubernetes/commit/c2c5051adf096ffd48bf1dcf5b11cb47e464ecdd
+  podManagementPolicy: Parallel
   replicas: {{ .Values.celery.num_workers }}
   template:
     metadata:
