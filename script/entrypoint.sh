@@ -59,11 +59,12 @@ if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] ; the
     echo "$(date) - waiting for ${POSTGRES_HOST}:${POSTGRES_PORT}... $i/$TRY_LOOP"
     sleep 5
   done
+  # TODO: move to a Helm hook
+  #   https://github.com/kubernetes/helm/blob/master/docs/charts_hooks.md
   if [ "$1" = "webserver" ]; then
     echo "Initialize database..."
     $CMD initdb
   fi
-  sleep 5
 fi
 
 if [ ! -z $GIT_SYNC_REPO ]; then

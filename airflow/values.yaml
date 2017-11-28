@@ -26,8 +26,8 @@ airflow:
   image_pull_policy: Always
   # Set scheduler_num_runs to control how the schduler behaves:
   #   -1 will let him looping indefinitively but it will never update the DAG
-  #   1 will have the scheduler quit after each execution, kubernetes will restart it
-  scheduler_num_runs: "1"
+  #   1 will have the scheduler quit after each refresh, but kubernetes will restart it
+  scheduler_num_runs: "-1"
   # prefix to the endpoint of the webserver
   # Ex: http://mycompany.com/airflow
   # url_prefix is "/airflow"
