@@ -193,3 +193,8 @@ postgresql:
     ##
     enabled: true
 
+redis:
+  enabled: true
+  redisPassword: redis
+  persistence:
+    enabled: true

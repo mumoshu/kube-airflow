@@ -32,6 +32,10 @@ spec:
               value: {{ .Values.postgresql.postgresUser }}
             - name: POSTGRES_PASSWORD
               value: {{ .Values.postgresql.postgresPassword }}
+            - name: REDIS_HOST
+              value: {{ template "airflow.redis.fullname" . }}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.redis.redisPassword }}
           args: ["webserver"]
           livenessProbe:
             httpGet:

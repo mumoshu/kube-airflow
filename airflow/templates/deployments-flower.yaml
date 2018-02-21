@@ -23,6 +23,10 @@ spec:
           env:
             - name: FLOWER_PORT
               value: "5555"
+            - name: REDIS_HOST
+              value: {{ template "airflow.redis.fullname" . }}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.redis.redisPassword }}
           ports:
             - name: "{{- .Values.airflow.prefix -}}flower"
               containerPort: 5555
