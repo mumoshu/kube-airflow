@@ -27,7 +27,7 @@ spec:
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       containers:
-        - name: {{- .Chart.Name -}}-worker
+        - name: {{ .Chart.Name }}-worker
           imagePullPolicy: {{ .Values.airflow.image_pull_policy }}
           image: "{{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}"
           env:
