@@ -115,13 +115,6 @@ db:
     password: airflow
     basename: rabbitmq
     database: airflow
-  postgres:
-    # use_embedded == true means final hostname will be prefix + basename
-    use_embedded: true
-    user: airflow
-    password: airflow
-    basename: postgres
-    database: airflow
 
 persistence:
   enabled: false
@@ -162,3 +155,40 @@ dags:
   git_sync_debug: false
   # Disable Load examples as soon as you enable git_repo
   load_examples: true
+
+## Configuration values for the postgresql dependency.
+## ref: https://github.com/kubernetes/charts/blob/master/stable/postgresql/README.md
+##
+postgresql:
+
+  ## Use the PostgreSQL chart dependency.
+  ## Set to false if bringing your own PostgreSQL.
+  ##
+  enabled: true
+
+  ## If bringing your own PostgreSQL, the full uri to use
+  ## e.g. postgres://concourse:changeme@my-postgres.com:5432/concourse?sslmode=disable
+  ##
+  # uri:
+
+  ### PostgreSQL User to create.
+  ##
+  postgresUser: airflow
+
+  ## PostgreSQL Password for the new user.
+  ## If not set, a random 10 characters password will be used.
+  ##
+  postgresPassword: airflow
+
+  ## PostgreSQL Database to create.
+  ##
+  postgresDatabase: airflow
+
+  ## Persistent Volume Storage configuration.
+  ## ref: https://kubernetes.io/docs/user-guide/persistent-volumes
+  ##
+  persistence:
+    ## Enable PostgreSQL persistence using Persistent Volume Claims.
+    ##
+    enabled: true
+
