@@ -39,7 +39,5 @@ spec:
           args: ["webserver"]
           livenessProbe:
             httpGet:
-              path: "{{ .Values.airflow.url_prefix }}/health"
+              path: "/health"
               port: "{{- .Values.airflow.prefix -}}web"
-            initialDelaySeconds: 120
-            periodSeconds: 10
