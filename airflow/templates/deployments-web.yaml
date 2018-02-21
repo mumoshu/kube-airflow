@@ -1,7 +1,12 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "{{- .Values.airflow.prefix -}}web"
+  name: {{ template "airflow.fullname" . }}-web
+  labels:
+    app: {{ template "airflow.name" . }}-web
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   replicas: 2
   strategy:
@@ -12,12 +17,12 @@ spec:
   template:
     metadata:
       labels:
-        app: airflow
-        tier: web
+        app: {{ template "airflow.name" . }}-web
+        release: {{ .Release.Name }}
     spec:
       restartPolicy: Always
       containers:
-        - name: "{{- .Values.airflow.prefix -}}web"
+        - name: {{ .Chart.Name }}-web
           image: {{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
           ports:

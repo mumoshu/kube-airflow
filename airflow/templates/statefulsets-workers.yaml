@@ -4,12 +4,14 @@
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: "{{- .Values.airflow.prefix -}}worker"
+  name: {{ template "airflow.fullname" . }}-worker
+  labels:
+    app: {{ template "airflow.name" . }}-worker
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
-  # selector:
-  #   matchLabels:
-  #     app: airflow
-  serviceName: "{{- .Values.airflow.prefix -}}workers"
+  serviceName: "{{ template "airflow.fullname" . }}-workers"
   updateStrategy:
     type: RollingUpdate
   # Use experimental burst mode for faster StatefulSet scaling
@@ -19,8 +21,8 @@ spec:
   template:
     metadata:
       labels:
-        app: airflow
-        tier: worker
+        app: {{ template "airflow.name" . }}-worker
+        release: {{ .Release.Name }}
     spec:
       restartPolicy: Always
       terminationGracePeriodSeconds: 30

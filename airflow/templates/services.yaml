@@ -1,12 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{- .Values.airflow.prefix -}}web"
+  name: {{ template "airflow.fullname" . }}-web
+  labels:
+    app: {{ template "airflow.name" . }}-web
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   type: ClusterIP
   selector:
-    app: airflow
-    tier: web
+    app: {{ template "airflow.name" . }}-web
+    release: {{ .Release.Name }}
   ports:
     - name: "{{- .Values.airflow.prefix -}}web"
       protocol: TCP
@@ -17,12 +22,17 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{- .Values.airflow.prefix -}}flower"
+  name: {{ template "airflow.fullname" . }}-flower
+  labels:
+    app: {{ template "airflow.name" . }}-flower
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   type: ClusterIP
   selector:
-    app: airflow
-    tier: flower
+    app: {{ template "airflow.name" . }}-flower
+    release: {{ .Release.Name }}
   ports:
     - name: "{{- .Values.airflow.prefix -}}flower"
       protocol: TCP
@@ -34,11 +44,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: "{{- .Values.airflow.prefix -}}workers"
+  name: {{ template "airflow.fullname" . }}-worker
+  labels:
+    app: {{ template "airflow.name" . }}-worker
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   ports:
     - name: "{{- .Values.airflow.prefix -}}wlog"
       port: 8793
   clusterIP: None
   selector:
-    app: airflow
+    app: {{ template "airflow.name" . }}-worker

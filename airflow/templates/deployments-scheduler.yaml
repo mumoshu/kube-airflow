@@ -1,7 +1,12 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "{{- .Values.airflow.prefix -}}scheduler"
+  name: {{ template "airflow.fullname" . }}-scheduler
+  labels:
+    app: {{ template "airflow.name" . }}-scheduler
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   replicas: 1
   strategy:
@@ -12,12 +17,12 @@ spec:
   template:
     metadata:
       labels:
-        app: airflow
-        tier: scheduler
+        app: {{ template "airflow.name" . }}-scheduler
+        release: {{ .Release.Name }}
     spec:
       restartPolicy: Always
       containers:
-        - name: "{{- .Values.airflow.prefix -}}scheduler"
+        - name: {{ .Chart.Name }}-scheduler
           image: {{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
           env:
