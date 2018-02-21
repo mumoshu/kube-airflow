@@ -43,6 +43,10 @@ spec:
               value: {{ template "airflow.redis.fullname" . }}
             - name: REDIS_PASSWORD
               value: {{ .Values.redis.redisPassword }}
+            {{- range $setting, $option := .Values.airflow.config }}
+            - name: {{ $setting }}
+              value: {{ $option }}
+            {{- end }}
           {{- if .Values.persistence.enabled }}
           volumeMounts:
             - name: dags-data

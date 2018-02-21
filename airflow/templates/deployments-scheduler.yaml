@@ -34,6 +34,10 @@ spec:
               value: {{ .Values.postgresql.postgresUser }}
             - name: POSTGRES_PASSWORD
               value: {{ .Values.postgresql.postgresPassword }}
+            {{- range $setting, $option := .Values.airflow.config }}
+            - name: {{ $setting }}
+              value: {{ $option }}
+            {{- end }}
           args: ["scheduler", "-n", "{{ .Values.airflow.scheduler_num_runs }}", "-p"]
       volumes:
         - name: dags-data
