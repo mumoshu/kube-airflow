@@ -18,7 +18,7 @@ spec:
       restartPolicy: Always
       containers:
         - name: "{{- .Values.airflow.prefix -}}scheduler"
-          image: {{ .Values.airflow.image }}
+          image: {{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
           envFrom:
             - configMapRef:

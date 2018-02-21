@@ -21,9 +21,10 @@ airflow:
   # set the max number of retries during container initialization
   init_retry_loop:
   # base image for webserver/scheduler/workers
-  image: mumoshu/kube-airflow:1.8.0.0-1.6.1
+  image: puckel/docker-airflow
+  imageTag: 1.9.0
   # image_pull_policy: Always or IfNotPresent
-  image_pull_policy: Always
+  image_pull_policy: IfNotPresent
   # Set scheduler_num_runs to control how the schduler behaves:
   #   -1 will let him looping indefinitively but it will never update the DAG
   #   1 will have the scheduler quit after each refresh, but kubernetes will restart it
