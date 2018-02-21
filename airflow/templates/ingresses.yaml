@@ -2,7 +2,7 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: "{{- .Values.airflow.prefix -}}airflow"
+  name: {{ template "airflow.fullname" . }}-web
   annotations:
     {{ range $key, $value := .Values.ingress.annotations.web }}
     {{ $key }}: {{ $value | quote }}
@@ -13,14 +13,14 @@ spec:
         paths:
           - path: {{ .Values.ingress.path.web }}
             backend:
-              serviceName: "{{- .Values.airflow.prefix -}}web"
-              servicePort: "{{- .Values.airflow.prefix -}}pweb"
+              serviceName: {{ template "airflow.fullname" . }}-web
+              servicePort: web
       host: {{ .Values.ingress.host }}
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: "{{- .Values.airflow.prefix -}}flower"
+  name: {{ template "airflow.fullname" . }}-flower
   annotations:
     {{ range $key, $value := .Values.ingress.annotations.flower }}
     {{ $key }}: {{ $value | quote }}
@@ -31,7 +31,7 @@ spec:
         paths:
           - path: {{ .Values.ingress.path.flower }}
             backend:
-              serviceName: "{{- .Values.airflow.prefix -}}flower"
-              servicePort: "{{- .Values.airflow.prefix -}}pflower"
+              serviceName: {{ template "airflow.fullname" . }}-flower
+              servicePort: flower
       host: {{ .Values.ingress.host }}
 {{- end }}

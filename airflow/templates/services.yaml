@@ -13,11 +13,9 @@ spec:
     app: {{ template "airflow.name" . }}-web
     release: {{ .Release.Name }}
   ports:
-    - name: "{{- .Values.airflow.prefix -}}web"
+    - name: {{ template "airflow.name" . }}-web
       protocol: TCP
       port: 8080
-      name: "{{- .Values.airflow.prefix -}}pweb"
-      targetPort: "{{- .Values.airflow.prefix -}}web"
 ---
 apiVersion: v1
 kind: Service
@@ -34,11 +32,9 @@ spec:
     app: {{ template "airflow.name" . }}-flower
     release: {{ .Release.Name }}
   ports:
-    - name: "{{- .Values.airflow.prefix -}}flower"
+    - name: {{ template "airflow.name" . }}-flower
       protocol: TCP
       port: 5555
-      name: "{{- .Values.airflow.prefix -}}pflower"
-      targetPort: "{{- .Values.airflow.prefix -}}flower"
 ---
 # Headless service for stable DNS entries of StatefulSet members.
 apiVersion: v1
@@ -52,7 +48,8 @@ metadata:
     heritage: {{ .Release.Service }}
 spec:
   ports:
-    - name: "{{- .Values.airflow.prefix -}}wlog"
+    - name: {{ template "airflow.name" . }}-worker
+      protocol: TCP
       port: 8793
   clusterIP: None
   selector:

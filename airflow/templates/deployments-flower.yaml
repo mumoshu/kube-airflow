@@ -28,6 +28,7 @@ spec:
             - name: REDIS_PASSWORD
               value: {{ .Values.redis.redisPassword }}
           ports:
-            - name: "{{- .Values.airflow.prefix -}}flower"
+            - name: flower
               containerPort: 5555
+              protocol: TCP
           args: ["flower"]

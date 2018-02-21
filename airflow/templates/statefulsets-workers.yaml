@@ -27,8 +27,8 @@ spec:
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       containers:
-        - name: "{{- .Values.airflow.prefix -}}worker"
-          imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
+        - name: {{- .Chart.Name -}}-worker
+          imagePullPolicy: {{ .Values.airflow.image_pull_policy }}
           image: "{{ .Values.airflow.image }}"
           env:
             - name: POSTGRES_HOST
@@ -52,8 +52,9 @@ spec:
           #     - /localpath/to/dags:/usr/local/airflow/dags
           args: ["worker"]
           ports:
-            - name: "{{- .Values.airflow.prefix -}}wlog"
+            - name: wlog
               containerPort: 8793
+              protocol: TCP
       volumes:
         - name: dags-data
         {{- if .Values.persistence.enabled }}

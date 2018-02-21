@@ -2,13 +2,6 @@
 
 # common settings and setting for the webserver
 airflow:
-  # Prefix all kubernetes name
-  # For prefix, use only lower case alphanumeric characters, '-' or '.', and must start and end
-  # with an alphanumeric character
-  # Note:
-  #   do NOT use characters such as " (double quote), ' (simple quote), / (slash) or \ (backslash)
-  #   in your passwords
-  prefix: ""
   # You will need to define your frenet key:
   # Generate fernet_key with:
   #    python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"

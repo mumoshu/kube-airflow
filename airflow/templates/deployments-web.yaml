@@ -26,8 +26,9 @@ spec:
           image: {{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
           ports:
-            - name: "{{- .Values.airflow.prefix -}}web"
+            - name: web
               containerPort: 8080
+              protocol: TCP
           env:
             - name: POSTGRES_HOST
               value: {{ template "airflow.postgresql.fullname" . }}
@@ -41,8 +42,12 @@ spec:
               value: {{ template "airflow.redis.fullname" . }}
             - name: REDIS_PASSWORD
               value: {{ .Values.redis.redisPassword }}
+            {{- range $setting, $option := .Values.airflow.config }}
+            - name: {{ $setting }}
+              value: {{ $option }}
+            {{- end }}
           args: ["webserver"]
           livenessProbe:
             httpGet:
               path: "/health"
-              port: "{{- .Values.airflow.prefix -}}web"
+              port: web
