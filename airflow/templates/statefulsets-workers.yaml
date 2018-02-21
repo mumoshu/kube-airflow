@@ -28,6 +28,15 @@ spec:
         - name: "{{- .Values.airflow.prefix -}}worker"
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
           image: "{{ .Values.airflow.image }}"
+          env:
+            - name: POSTGRES_HOST
+              value: {{ template "airflow.postgresql.fullname" . }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.postgresDatabase }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.postgresUser }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.postgresPassword }}
           {{- if .Values.persistence.enabled }}
           volumeMounts:
             - name: dags-data
@@ -35,9 +44,6 @@ spec:
           {{- end }}
           # volumes:
           #     - /localpath/to/dags:/usr/local/airflow/dags
-          envFrom:
-            - configMapRef:
-                name: "{{- .Values.airflow.prefix -}}airflow-env"
           args: ["worker"]
           ports:
             - name: "{{- .Values.airflow.prefix -}}wlog"
