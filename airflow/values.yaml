@@ -34,26 +34,6 @@ airflow:
   # url_prefix is "/airflow"
   url_prefix: "/airflow"
 
-  # If you want to override `airflow.cfg`, you can set it in `airflow.airflow_cfg.data`
-  # airflow-cfg allow you to override the whole content of airflow.cfg at once
-  # BEWARE of maintaining uniformity in your configuration, especially since the bootstrap script
-  # `entrypoint.sh` will not adapt the various settings accordingly to this configuration, such as
-  # rabbitmq/postgres creds/host, git-sync etc.
-  # If you choose to hardcode a complete file, just ensure you have the same configuration as
-  # defined here (remember the postgres/rabbitmq hostnames are prepended by a prefix defined in
-  # `airflow.prefix`). If you use templating you can still look at the example in
-  # `values-airflowcfg.yaml`.
-  airflow_cfg:
-    enable: false
-    data: |
-      #     [core]
-      #     # The home folder for airflow, default is ~/airflow
-      #     airflow_home = /usr/local/airflow
-      #
-      #     ...
-      #
-      # (see a more complete example `airflow/myconfig-with-airflowcfg-configmap.yaml`)
-
 celery:
   # Number of celery workers to initialize
   num_workers: 1
