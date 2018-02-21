@@ -2,14 +2,18 @@
 
 CMD="airflow"
 TRY_LOOP="10"
-POSTGRES_HOST="postgres"
-POSTGRES_PORT="5432"
-RABBITMQ_HOST="rabbitmq"
-RABBITMQ_CREDS="airflow:airflow"
-FERNET_KEY=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print FERNET_KEY")
 
-# Generate Fernet key
-sed -i "s/{FERNET_KEY}/${FERNET_KEY}/" $AIRFLOW_HOME/airflow.cfg
+: "${POSTGRES_HOST:="postgres"}"
+: "${POSTGRES_PORT:="5432"}"
+: "${POSTGRES_USER:="airflow"}"
+: "${POSTGRES_PASSWORD:="airflow"}"
+: "${POSTGRES_DB:="airflow"}"
+: "${RABBITMQ_HOST:="rabbitmq"}"
+: "${RABBITMQ_CREDS:="airflow:airflow"}"
+
+# Defaults and back-compat
+: "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}}"
+: "${AIRFLOW__CORE__EXECUTOR:=${EXECUTOR:-Sequential}Executor}"
 
 # wait for rabbitmq
 if [ "$1" = "webserver" ] || [ "$1" = "worker" ] || [ "$1" = "scheduler" ] || [ "$1" = "flower" ] ; then
