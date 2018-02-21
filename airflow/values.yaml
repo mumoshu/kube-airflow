@@ -26,6 +26,7 @@ airflow:
   # Ex: http://mycompany.com/airflow
   # url_prefix is "/airflow"
   url_prefix: "/airflow"
+  config: {}
 
 celery:
   # Number of celery workers to initialize
