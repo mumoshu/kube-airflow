@@ -20,18 +20,9 @@ spec:
         - name: "{{- .Values.airflow.prefix -}}web"
           image: {{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
-          envFrom:
-            - configMapRef:
-                name: "{{- .Values.airflow.prefix -}}airflow-env"
           ports:
             - name: "{{- .Values.airflow.prefix -}}web"
               containerPort: 8080
-          {{- if .Values.airflow.airflow_cfg.enable }}
-          volumeMounts:
-            - mountPath: /usr/local/airflow-cm/
-              name: "{{ .Values.airflow.prefix -}}airflow-cfg"
-          command: ["bash", "/usr/local/airflow-cm/bootstrap.sh"]
-          {{- end }}
           args: ["webserver"]
           livenessProbe:
             httpGet:
@@ -39,9 +30,3 @@ spec:
               port: "{{- .Values.airflow.prefix -}}web"
             initialDelaySeconds: 120
             periodSeconds: 10
-      {{- if .Values.airflow.airflow_cfg.enable }}
-      volumes:
-        - name: "{{ .Values.airflow.prefix -}}airflow-cfg"
-          configMap:
-            name: "{{ .Values.airflow.prefix -}}airflow.cfg"
-      {{ end -}}

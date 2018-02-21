@@ -39,12 +39,6 @@ spec:
             - configMapRef:
                 name: "{{- .Values.airflow.prefix -}}airflow-env"
           args: ["worker"]
-          {{- if .Values.airflow.airflow_cfg.enable }}
-          volumeMounts:
-            - mountPath: /usr/local/airflow-cm/
-              name: "{{ .Values.airflow.prefix -}}airflow-cfg"
-          command: ["bash", "/usr/local/airflow-cm/bootstrap.sh"]
-          {{- end }}
           ports:
             - name: "{{- .Values.airflow.prefix -}}wlog"
               containerPort: 8793
@@ -56,8 +50,3 @@ spec:
         {{- else }}
           emptyDir: {}
         {{- end }}
-        {{- if .Values.airflow.airflow_cfg.enable }}
-        - name: "{{ .Values.airflow.prefix -}}airflow-cfg"
-          configMap:
-            name: "{{ .Values.airflow.prefix -}}airflow.cfg"
-        {{ end -}}

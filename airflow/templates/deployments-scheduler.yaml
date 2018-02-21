@@ -20,15 +20,6 @@ spec:
         - name: "{{- .Values.airflow.prefix -}}scheduler"
           image: {{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
-          envFrom:
-            - configMapRef:
-                name: "{{- .Values.airflow.prefix -}}airflow-env"
-          {{- if .Values.airflow.airflow_cfg.enable }}
-          volumeMounts:
-            - mountPath: /usr/local/airflow-cm/
-              name: "{{- .Values.airflow.prefix -}}airflow-cfg"
-          command: ["bash", "/usr/local/airflow-cm/bootstrap.sh"]
-          {{- end }}
           args: ["scheduler", "-n", "{{ .Values.airflow.scheduler_num_runs }}", "-p"]
       volumes:
         - name: dags-data
@@ -38,8 +29,3 @@ spec:
         {{- else }}
           emptyDir: {}
         {{- end -}}
-        {{- if .Values.airflow.airflow_cfg.enable }}
-        - name: "{{ .Values.airflow.prefix -}}airflow-cfg"
-          configMap:
-            name: "{{ .Values.airflow.prefix -}}airflow.cfg"
-        {{ end -}}
