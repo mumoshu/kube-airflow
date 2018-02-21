@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: "{{- .Values.airflow.prefix -}}web"
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: airflow
     tier: web
@@ -13,14 +13,13 @@ spec:
       port: 8080
       name: "{{- .Values.airflow.prefix -}}pweb"
       targetPort: "{{- .Values.airflow.prefix -}}web"
-      nodePort: 32080
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: "{{- .Values.airflow.prefix -}}flower"
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: airflow
     tier: flower
@@ -30,7 +29,6 @@ spec:
       port: 5555
       name: "{{- .Values.airflow.prefix -}}pflower"
       targetPort: "{{- .Values.airflow.prefix -}}flower"
-      nodePort: 32081
 ---
 # Headless service for stable DNS entries of StatefulSet members.
 apiVersion: v1
