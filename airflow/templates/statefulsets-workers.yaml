@@ -29,7 +29,7 @@ spec:
       containers:
         - name: {{- .Chart.Name -}}-worker
           imagePullPolicy: {{ .Values.airflow.image_pull_policy }}
-          image: "{{ .Values.airflow.image }}"
+          image: "{{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}"
           env:
             - name: POSTGRES_HOST
               value: {{ template "airflow.postgresql.fullname" . }}
