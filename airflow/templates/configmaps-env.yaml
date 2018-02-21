@@ -11,9 +11,9 @@ data:
   {{- if .Values.db.rabbitmq.user }}
   RABBITMQ_CREDS: "{{- .Values.db.rabbitmq.user -}}:{{- .Values.db.rabbitmq.password -}}"
   {{- end }}
-  POSTGRES_HOST: "{{- .Values.airflow.prefix -}}{{- .Values.db.postgres.basename -}}"
-  {{- if .Values.db.postgres.user }}
-  POSTGRES_CREDS: "{{- .Values.db.postgres.user -}}:{{- .Values.db.postgres.password -}}"
+  POSTGRES_HOST: {{ template "airflow.postgresql.fullname" . }}
+  {{- if .Values.postgresql.postgresUser }}
+  POSTGRES_CREDS: "{{- .Values.postgresql.postgresUser -}}:{{- .Values.postgresql.postgresPassword -}}"
   {{- end }}
   {{- if .Values.airflow.init_retry_loop }}
   TRY_LOOP: "{{ .Values.airflow.init_retry_loop -}}"
