@@ -82,15 +82,6 @@ ingress:
     #  - api is at 'http://mycompany.com/airflow/flower'
     flower: /airflow/flower
 
-db:
-  rabbitmq:
-    # use_embedded == true means final hostname will be prefix + basename
-    use_embedded: true
-    user: airflow
-    password: airflow
-    basename: rabbitmq
-    database: airflow
-
 persistence:
   enabled: false
   ## storageClass: Persistent Volume Storage Class
