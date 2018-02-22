@@ -13,7 +13,7 @@ spec:
     app: {{ template "airflow.name" . }}-web
     release: {{ .Release.Name }}
   ports:
-    - name: {{ template "airflow.name" . }}-web
+    - name: web
       protocol: TCP
       port: 8080
 ---
@@ -32,7 +32,7 @@ spec:
     app: {{ template "airflow.name" . }}-flower
     release: {{ .Release.Name }}
   ports:
-    - name: {{ template "airflow.name" . }}-flower
+    - name: flower
       protocol: TCP
       port: 5555
 ---
@@ -48,7 +48,7 @@ metadata:
     heritage: {{ .Release.Service }}
 spec:
   ports:
-    - name: {{ template "airflow.name" . }}-worker
+    - name: worker
       protocol: TCP
       port: 8793
   clusterIP: None
