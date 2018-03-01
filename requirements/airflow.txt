@@ -10,7 +10,8 @@ pyasn1
 psycopg2
 celery>=4.0.0
 flower>=0.7.3
-airflow[celery,postgresql,hive]
+# airflow[celery,postgresql,hive]
+git+https://github.com/apache/incubator-airflow#egg=airflow
 kubernetes
 Flask-WTF==0.14
 click
