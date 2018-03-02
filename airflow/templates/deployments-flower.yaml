@@ -1,32 +1,38 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "{{- .Values.airflow.prefix -}}flower"
+  name: {{ template "airflow.fullname" . }}-flower
+  labels:
+    app: {{ template "airflow.name" . }}-flower
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   replicas: 1
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
   template:
     metadata:
       labels:
-        app: airflow
-        tier: flower
+        app: {{ template "airflow.name" . }}-flower
+        release: {{ .Release.Name }}
     spec:
       restartPolicy: Always
       containers:
-        - name: "{{- .Values.airflow.prefix -}}flower"
-          image: {{ .Values.airflow.image }}
-          imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
+        - name: {{ .Chart.Name }}-flower
+          image: {{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}
+          imagePullPolicy: {{ .Values.airflow.image_pull_policy }}
           env:
             - name: FLOWER_PORT
               value: "5555"
-          envFrom:
-            - configMapRef:
-                name: "{{- .Values.airflow.prefix -}}airflow-env"
+            - name: REDIS_HOST
+              value: {{ template "airflow.redis.fullname" . }}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.redis.redisPassword }}
+            {{- range $setting, $option := .Values.airflow.config }}
+            - name: {{ $setting }}
+              value: {{ $option }}
+            {{- end }}
           ports:
-            - name: "{{- .Values.airflow.prefix -}}flower"
+            - name: flower
               containerPort: 5555
+              protocol: TCP
           args: ["flower"]

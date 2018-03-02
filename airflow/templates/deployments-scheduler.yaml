@@ -1,7 +1,12 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: "{{- .Values.airflow.prefix -}}scheduler"
+  name: {{ template "airflow.fullname" . }}-scheduler
+  labels:
+    app: {{ template "airflow.name" . }}-scheduler
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
   replicas: 1
   strategy:
@@ -12,23 +17,27 @@ spec:
   template:
     metadata:
       labels:
-        app: airflow
-        tier: scheduler
+        app: {{ template "airflow.name" . }}-scheduler
+        release: {{ .Release.Name }}
     spec:
       restartPolicy: Always
       containers:
-        - name: "{{- .Values.airflow.prefix -}}scheduler"
-          image: {{ .Values.airflow.image }}
+        - name: {{ .Chart.Name }}-scheduler
+          image: {{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}
           imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
-          envFrom:
-            - configMapRef:
-                name: "{{- .Values.airflow.prefix -}}airflow-env"
-          {{- if .Values.airflow.airflow_cfg.enable }}
-          volumeMounts:
-            - mountPath: /usr/local/airflow-cm/
-              name: "{{- .Values.airflow.prefix -}}airflow-cfg"
-          command: ["bash", "/usr/local/airflow-cm/bootstrap.sh"]
-          {{- end }}
+          env:
+            - name: POSTGRES_HOST
+              value: {{ template "airflow.postgresql.fullname" . }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.postgresDatabase }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.postgresUser }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.postgresPassword }}
+            {{- range $setting, $option := .Values.airflow.config }}
+            - name: {{ $setting }}
+              value: {{ $option }}
+            {{- end }}
           args: ["scheduler", "-n", "{{ .Values.airflow.scheduler_num_runs }}", "-p"]
       volumes:
         - name: dags-data
@@ -38,8 +47,3 @@ spec:
         {{- else }}
           emptyDir: {}
         {{- end -}}
-        {{- if .Values.airflow.airflow_cfg.enable }}
-        - name: "{{ .Values.airflow.prefix -}}airflow-cfg"
-          configMap:
-            name: "{{ .Values.airflow.prefix -}}airflow.cfg"
-        {{ end -}}

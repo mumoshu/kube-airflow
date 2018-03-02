@@ -2,13 +2,6 @@
 
 # common settings and setting for the webserver
 airflow:
-  # Prefix all kubernetes name
-  # For prefix, use only lower case alphanumeric characters, '-' or '.', and must start and end
-  # with an alphanumeric character
-  # Note:
-  #   do NOT use characters such as " (double quote), ' (simple quote), / (slash) or \ (backslash)
-  #   in your passwords
-  prefix: ""
   # You will need to define your frenet key:
   # Generate fernet_key with:
   #    python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)"
@@ -21,9 +14,10 @@ airflow:
   # set the max number of retries during container initialization
   init_retry_loop:
   # base image for webserver/scheduler/workers
-  image: mumoshu/kube-airflow:1.8.0.0-1.6.1
+  image: puckel/docker-airflow
+  imageTag: 1.9.0
   # image_pull_policy: Always or IfNotPresent
-  image_pull_policy: Always
+  image_pull_policy: IfNotPresent
   # Set scheduler_num_runs to control how the schduler behaves:
   #   -1 will let him looping indefinitively but it will never update the DAG
   #   1 will have the scheduler quit after each refresh, but kubernetes will restart it
@@ -32,26 +26,7 @@ airflow:
   # Ex: http://mycompany.com/airflow
   # url_prefix is "/airflow"
   url_prefix: "/airflow"
-
-  # If you want to override `airflow.cfg`, you can set it in `airflow.airflow_cfg.data`
-  # airflow-cfg allow you to override the whole content of airflow.cfg at once
-  # BEWARE of maintaining uniformity in your configuration, especially since the bootstrap script
-  # `entrypoint.sh` will not adapt the various settings accordingly to this configuration, such as
-  # rabbitmq/postgres creds/host, git-sync etc.
-  # If you choose to hardcode a complete file, just ensure you have the same configuration as
-  # defined here (remember the postgres/rabbitmq hostnames are prepended by a prefix defined in
-  # `airflow.prefix`). If you use templating you can still look at the example in
-  # `values-airflowcfg.yaml`.
-  airflow_cfg:
-    enable: false
-    data: |
-      #     [core]
-      #     # The home folder for airflow, default is ~/airflow
-      #     airflow_home = /usr/local/airflow
-      #
-      #     ...
-      #
-      # (see a more complete example `airflow/myconfig-with-airflowcfg-configmap.yaml`)
+  config: {}
 
 celery:
   # Number of celery workers to initialize
@@ -106,15 +81,6 @@ ingress:
     # if flower is '/airflow/flower':
     #  - api is at 'http://mycompany.com/airflow/flower'
     flower: /airflow/flower
-
-db:
-  rabbitmq:
-    # use_embedded == true means final hostname will be prefix + basename
-    use_embedded: true
-    user: airflow
-    password: airflow
-    basename: rabbitmq
-    database: airflow
 
 persistence:
   enabled: false
@@ -192,3 +158,8 @@ postgresql:
     ##
     enabled: true
 
+redis:
+  enabled: true
+  redisPassword: redis
+  persistence:
+    enabled: true

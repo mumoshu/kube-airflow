@@ -4,12 +4,14 @@
 apiVersion: apps/v1beta1
 kind: StatefulSet
 metadata:
-  name: "{{- .Values.airflow.prefix -}}worker"
+  name: {{ template "airflow.fullname" . }}-worker
+  labels:
+    app: {{ template "airflow.name" . }}-worker
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
 spec:
-  # selector:
-  #   matchLabels:
-  #     app: airflow
-  serviceName: "{{- .Values.airflow.prefix -}}workers"
+  serviceName: "{{ template "airflow.fullname" . }}-workers"
   updateStrategy:
     type: RollingUpdate
   # Use experimental burst mode for faster StatefulSet scaling
@@ -19,15 +21,32 @@ spec:
   template:
     metadata:
       labels:
-        app: airflow
-        tier: worker
+        app: {{ template "airflow.name" . }}-worker
+        release: {{ .Release.Name }}
     spec:
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       containers:
-        - name: "{{- .Values.airflow.prefix -}}worker"
-          imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
-          image: "{{ .Values.airflow.image }}"
+        - name: {{ .Chart.Name }}-worker
+          imagePullPolicy: {{ .Values.airflow.image_pull_policy }}
+          image: "{{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}"
+          env:
+            - name: POSTGRES_HOST
+              value: {{ template "airflow.postgresql.fullname" . }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.postgresDatabase }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.postgresUser }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.postgresPassword }}
+            - name: REDIS_HOST
+              value: {{ template "airflow.redis.fullname" . }}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.redis.redisPassword }}
+            {{- range $setting, $option := .Values.airflow.config }}
+            - name: {{ $setting }}
+              value: {{ $option }}
+            {{- end }}
           {{- if .Values.persistence.enabled }}
           volumeMounts:
             - name: dags-data
@@ -35,19 +54,11 @@ spec:
           {{- end }}
           # volumes:
           #     - /localpath/to/dags:/usr/local/airflow/dags
-          envFrom:
-            - configMapRef:
-                name: "{{- .Values.airflow.prefix -}}airflow-env"
           args: ["worker"]
-          {{- if .Values.airflow.airflow_cfg.enable }}
-          volumeMounts:
-            - mountPath: /usr/local/airflow-cm/
-              name: "{{ .Values.airflow.prefix -}}airflow-cfg"
-          command: ["bash", "/usr/local/airflow-cm/bootstrap.sh"]
-          {{- end }}
           ports:
-            - name: "{{- .Values.airflow.prefix -}}wlog"
+            - name: wlog
               containerPort: 8793
+              protocol: TCP
       volumes:
         - name: dags-data
         {{- if .Values.persistence.enabled }}
@@ -56,8 +67,3 @@ spec:
         {{- else }}
           emptyDir: {}
         {{- end }}
-        {{- if .Values.airflow.airflow_cfg.enable }}
-        - name: "{{ .Values.airflow.prefix -}}airflow-cfg"
-          configMap:
-            name: "{{ .Values.airflow.prefix -}}airflow.cfg"
-        {{ end -}}
