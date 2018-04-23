@@ -1,0 +1,130 @@
+# This file is just an example on how to override airflow.cfg from config.yaml
+# DO NOT USE IT DIRECTLY
+
+airflow:
+  prefix: "af-"
+  url_prefix: /airflow
+  ...
+  airflow_cfg:
+    enable: true
+    data: |
+    [core]
+    # The home folder for airflow, default is ~/airflow
+    airflow_home = /usr/local/airflow
+
+    ...
+
+    # The executor class that airflow should use. Choices include
+    # SequentialExecutor, LocalExecutor, CeleryExecutor
+    executor = CeleryExecutor
+
+    # The SqlAlchemy connection string to the metadata database.
+    # SqlAlchemy supports many different database engine, more information
+    # their website
+    sql_alchemy_conn = postgresql+psycopg2://{{ POSTGRES_CREDS }}@{{ POSTGRES_HOST }}/airflow
+
+    # The SqlAlchemy pool size is the maximum number of database connections
+    # in the pool.
+    sql_alchemy_pool_size = 5
+
+    # The SqlAlchemy pool recycle is the number of seconds a connection
+    # can be idle in the pool before it is invalidated. This config does
+    # not apply to sqlite.
+    sql_alchemy_pool_recycle = 3600
+
+    # The amount of parallelism as a setting to the executor. This defines
+    # the max number of task instances that should run simultaneously
+    # on this airflow installation
+    parallelism = 32
+
+    # The number of task instances allowed to run concurrently by the scheduler
+    dag_concurrency = 16
+
+    # Are DAGs paused by default at creation
+    dags_are_paused_at_creation = False
+
+    # The maximum number of active DAG runs per DAG
+    max_active_runs_per_dag = 16
+
+    # Whether to load the examples that ship with Airflow. It's good to
+    # get started, but you probably want to set this to False in a production
+    # environment
+    load_examples = {{ LOAD_DAGS_EXAMPLES }}
+
+    # Where your Airflow plugins are stored
+    plugins_folder = /usr/local/airflow/plugins
+
+    # Secret key to save connection passwords in the db
+    fernet_key = {{ FERNET_KEY }}
+
+    ...
+
+    [webserver]
+    # The base url of your website as airflow cannot guess what domain or
+    # cname you are using. This is use in automated emails that
+    # airflow sends to point links to the right web server
+    base_url = http://localhost:8080
+
+    # The ip specified when starting the web server
+    web_server_host = 0.0.0.0
+
+    # Root URL to use for the web server
+    web_server_url_prefix = {{ AIRFLOW_URL_PREFIX }}
+
+    # The port on which to run the web server
+    web_server_port = 8080
+
+    ...
+
+    [celery]
+    # This section only applies if you are using the CeleryExecutor in
+    # [core] section above
+
+    # The app name that will be used by celery
+    celery_app_name = airflow.executors.celery_executor
+
+    # The concurrency that will be used when starting workers with the
+    # "airflow worker" command. This defines the number of task instances that
+    # a worker will take, so size up your workers based on the resources on
+    # your worker box and the nature of your tasks
+    celeryd_concurrency = 16
+
+    # When you start an airflow worker, airflow starts a tiny web server
+    # subprocess to serve the workers local log files to the airflow main
+    # web server, who then builds pages and sends them to users. This defines
+    # the port on which the logs are served. It needs to be unused, and open
+    # visible from the main web server to connect into the workers.
+    worker_log_server_port = 8793
+
+    # The Celery broker URL. Celery supports RabbitMQ, Redis and experimentally
+    # a sqlalchemy database. Refer to the Celery documentation for more
+    # information.
+    broker_url = amqp://{{ RABBITMQ_CREDS }}@{{ RABBITMQ_HOST }}:5672/airflow
+
+    # Another key Celery setting
+    celery_result_backend = amqp://{{ RABBITMQ_CREDS }}@{{ RABBITMQ_HOST }}:5672/airflow
+
+    # Celery Flower is a sweet UI for Celery. Airflow has a shortcut to start
+    # it `airflow flower`. This defines the port that Celery Flower runs on
+    flower_port = 5555
+
+    # The root URL for Flower
+    flower_url_prefix = {{ FLOWER_URL_PREFIX }}
+
+    ...
+
+...
+
+celery:
+  num_workers: 1
+
+ingress:
+  enabled: true
+  annotations:
+  host: ""
+  path:
+    web: /airflow
+    flower: /flower
+
+flower:
+  url_prefix: /flower

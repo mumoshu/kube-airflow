@@ -1,0 +1,5 @@
+# Place in this file the Python requirements your DAG may need. They will be automatically
+# installed inside the container during the container build, independently if you use embedded DAGs
+# of Git-sync.
+
+ruamel-yaml
