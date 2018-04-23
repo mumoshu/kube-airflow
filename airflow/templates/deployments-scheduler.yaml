@@ -1,0 +1,49 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "airflow.fullname" . }}-scheduler
+  labels:
+    app: {{ template "airflow.name" . }}-scheduler
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "airflow.name" . }}-scheduler
+        release: {{ .Release.Name }}
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: {{ .Chart.Name }}-scheduler
+          image: {{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}
+          imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
+          env:
+            - name: POSTGRES_HOST
+              value: {{ template "airflow.postgresql.fullname" . }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.postgresDatabase }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.postgresUser }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.postgresPassword }}
+            {{- range $setting, $option := .Values.airflow.config }}
+            - name: {{ $setting }}
+              value: {{ $option }}
+            {{- end }}
+          args: ["scheduler", "-n", "{{ .Values.airflow.scheduler_num_runs }}", "-p"]
+      volumes:
+        - name: dags-data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.existingClaim | default (include "airflow.fullname" .) }}
+        {{- else }}
+          emptyDir: {}
+        {{- end -}}

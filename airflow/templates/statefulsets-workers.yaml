@@ -1,0 +1,69 @@
+# Workers are not in deployment, but in StatefulSet, to allow each worker expose a mini-server
+# that only serve logs, that will be used by the web server.
+
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: {{ template "airflow.fullname" . }}-worker
+  labels:
+    app: {{ template "airflow.name" . }}-worker
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  serviceName: "{{ template "airflow.fullname" . }}-workers"
+  updateStrategy:
+    type: RollingUpdate
+  # Use experimental burst mode for faster StatefulSet scaling
+  #   https://github.com/kubernetes/kubernetes/commit/c2c5051adf096ffd48bf1dcf5b11cb47e464ecdd
+  podManagementPolicy: Parallel
+  replicas: {{ .Values.celery.num_workers }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "airflow.name" . }}-worker
+        release: {{ .Release.Name }}
+    spec:
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: {{ .Chart.Name }}-worker
+          imagePullPolicy: {{ .Values.airflow.image_pull_policy }}
+          image: "{{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}"
+          env:
+            - name: POSTGRES_HOST
+              value: {{ template "airflow.postgresql.fullname" . }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.postgresDatabase }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.postgresUser }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.postgresPassword }}
+            - name: REDIS_HOST
+              value: {{ template "airflow.redis.fullname" . }}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.redis.redisPassword }}
+            {{- range $setting, $option := .Values.airflow.config }}
+            - name: {{ $setting }}
+              value: {{ $option }}
+            {{- end }}
+          {{- if .Values.persistence.enabled }}
+          volumeMounts:
+            - name: dags-data
+              mountPath: {{ .Values.airflow.dag_path }}
+          {{- end }}
+          # volumes:
+          #     - /localpath/to/dags:/usr/local/airflow/dags
+          args: ["worker"]
+          ports:
+            - name: wlog
+              containerPort: 8793
+              protocol: TCP
+      volumes:
+        - name: dags-data
+        {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+              claimName: {{ .Values.persistence.existingClaim | default (include "airflow.fullname" .) }}
+        {{- else }}
+          emptyDir: {}
+        {{- end }}

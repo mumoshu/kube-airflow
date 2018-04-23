@@ -1,0 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "airflow.fullname" . }}-web
+  labels:
+    app: {{ template "airflow.name" . }}-web
+    chart: {{ template "airflow.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 2
+  template:
+    metadata:
+      labels:
+        app: {{ template "airflow.name" . }}-web
+        release: {{ .Release.Name }}
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: {{ .Chart.Name }}-web
+          image: {{ .Values.airflow.image }}:{{ .Values.airflow.imageTag }}
+          imagePullPolicy: {{ .Values.airflow.image_pull_policy}}
+          ports:
+            - name: web
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: POSTGRES_HOST
+              value: {{ template "airflow.postgresql.fullname" . }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgresql.postgresDatabase }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgresql.postgresUser }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgresql.postgresPassword }}
+            - name: REDIS_HOST
+              value: {{ template "airflow.redis.fullname" . }}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.redis.redisPassword }}
+            {{- range $setting, $option := .Values.airflow.config }}
+            - name: {{ $setting }}
+              value: {{ $option }}
+            {{- end }}
+          args: ["webserver"]
+          livenessProbe:
+            httpGet:
+              path: "/health"
+              port: web

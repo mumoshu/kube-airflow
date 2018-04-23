@@ -12,24 +12,59 @@ DOCKERFILE ?= $(BUILD_ROOT)/Dockerfile
 ROOTFS ?= $(BUILD_ROOT)/rootfs
 AIRFLOW_CONF ?= $(BUILD_ROOT)/config/airflow.cfg
 ENTRYPOINT_SH ?= $(BUILD_ROOT)/script/entrypoint.sh
+GIT_SYNC ?= $(BUILD_ROOT)/script/git-sync
+DAGS ?= $(BUILD_ROOT)/dags
+AIRFLOW_REQUIREMENTS ?= $(BUILD_ROOT)/requirements/airflow.txt
+DAGS_REQUIREMENTS ?= $(BUILD_ROOT)/requirements/dags.txt
 DOCKER_CACHE ?= docker-cache
 SAVED_IMAGE ?= $(DOCKER_CACHE)/image-$(AIRFLOW_VERSION)-$(KUBECTL_VERSION).tar
 
 NAMESPACE ?= airflow-dev
+HELM_APPLICATION_NAME ?= airflow
+HELM_VALUES ?= airflow/values.yaml
+CHART_LOCATION ?= ./airflow
+EMBEDDED_DAGS_LOCATION ?= "./dags"
+REQUIREMENTS_TXT_LOCATION ?= "requirements/dags.txt"
 
 .PHONY: build clean
 
 clean:
 	rm -Rf build
 
-build: $(DOCKERFILE) $(ROOTFS) $(AIRFLOW_CONF) $(ENTRYPOINT_SH)
+helm-install:
+	helm upgrade -f $(HELM_VALUES) \
+	             --install \
+	             --debug \
+	             $(HELM_APPLICATION_NAME) \
+	             $(CHART_LOCATION)
+
+helm-check:
+	helm install --dry_run \
+	            $(CHART_LOCATION) \
+	             --version=v0.1.0 \
+	             --name=$(HELM_APPLICATION_NAME) \
+	             --namespace=$(NAMESPACE) \
+	             --debug \
+	             -f $(HELM_VALUES)
+
+helm-ls:
+	helm ls --all $(HELM_APPLICATION_NAME)
+
+helm-uninstall:
+	helm del --purge $(HELM_APPLICATION_NAME)
+
+build: clean $(DOCKERFILE) $(ROOTFS) $(DAGS) $(AIRFLOW_CONF) $(ENTRYPOINT_SH) $(GIT_SYNC) $(AIRFLOW_REQUIREMENTS) $(DAGS_REQUIREMENTS)
 	cd $(BUILD_ROOT) && docker build -t $(IMAGE) . && docker tag $(IMAGE) $(ALIAS)
 
 publish:
 	docker push $(IMAGE) && docker push $(ALIAS)
 
 $(DOCKERFILE): $(BUILD_ROOT)
-	sed -e 's/%%KUBECTL_VERSION%%/'"$(KUBECTL_VERSION)"'/g;' -e 's/%%AIRFLOW_VERSION%%/'"$(AIRFLOW_VERSION)"'/g;' Dockerfile.template > $(DOCKERFILE)
+	sed -e 's/%%KUBECTL_VERSION%%/'"$(KUBECTL_VERSION)"'/g;' \
+	    -e 's/%%AIRFLOW_VERSION%%/'"$(AIRFLOW_VERSION)"'/g;' \
+	    -e 's#%%EMBEDDED_DAGS_LOCATION%%#'"$(EMBEDDED_DAGS_LOCATION)"'#g;' \
+	    -e 's#%%REQUIREMENTS_TXT_LOCATION%%#'"$(REQUIREMENTS_TXT_LOCATION)"'#g;' \
+	    Dockerfile.template > $(DOCKERFILE)
 
 $(ROOTFS): $(BUILD_ROOT)
 	mkdir -p rootfs
@@ -42,6 +77,22 @@ $(AIRFLOW_CONF): $(BUILD_ROOT)
 $(ENTRYPOINT_SH): $(BUILD_ROOT)
 	mkdir -p $(shell dirname $(ENTRYPOINT_SH))
 	cp script/entrypoint.sh $(ENTRYPOINT_SH)
+
+$(GIT_SYNC): $(BUILD_ROOT)
+	mkdir -p $(shell dirname $(GIT_SYNC))
+	cp script/git-sync $(GIT_SYNC)
+
+$(AIRFLOW_REQUIREMENTS): $(BUILD_ROOT)
+	mkdir -p $(shell dirname $(AIRFLOW_REQUIREMENTS))
+	cp requirements/airflow.txt $(AIRFLOW_REQUIREMENTS)
+
+$(DAGS_REQUIREMENTS): $(BUILD_ROOT)
+	mkdir -p $(shell dirname $(DAGS_REQUIREMENTS))
+	cp $(REQUIREMENTS_TXT_LOCATION) $(DAGS_REQUIREMENTS)
+
+$(DAGS): $(BUILD_ROOT)
+	mkdir -p $(shell dirname $(DAGS))
+	cp -R $(EMBEDDED_DAGS_LOCATION) $(DAGS)
 
 $(BUILD_ROOT):
 	mkdir -p $(BUILD_ROOT)
