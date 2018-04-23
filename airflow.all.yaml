@@ -142,6 +142,12 @@ spec:
         - name: web
           containerPort: 8080
         args: ["webserver"]
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 240
+          periodSeconds: 60
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
