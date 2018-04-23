@@ -3,8 +3,16 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/stibbons31/kube-airflow.svg?maxAge=2592000)]()
 [![Docker Stars](https://img.shields.io/docker/stars/stibbons31/kube-airflow.svg?maxAge=2592000)]()
 
-This repository contains a forked version of [mumoshu/kube-airflow](https://github.com/mumoshu/kube-airflow) providing a production ready Helm
-chart for running Airflow with the Celery executor on a Kubernetes Cluster.
+kube-airflow provides a set of tools to run Airflow in a Kubernetes cluster.
+This is useful when you'd want:
+
+* Easy high availability of the Airflow scheduler
+  * [Running multiple schedulers for high availability isn't safe](https://groups.google.com/forum/#!topic/airbnb_airflow/-1wKa3OcwME) so it isn't the way to go in the first place. [Someone in the internet tried to implement a wrapper](https://stackoverflow.com/a/39595535) to implement leader election on top of the scheduler so that only one scheduler executes the tasks at a time. It is possible but can't we just utilize a kind of cluster manager here? This is where Kubernetes comes into play.
+* Easy parallelism of task executions
+  * The common way to scale out workers in Airflow is to utilize Celery. However, managing a H/A backend database and Celery workers just for parallelising task executions sounds like a hassle. This is where Kubernetes comes into play, again. If you already had a K8S cluster, just let K8S manage them for you.
+  * If you have ever considered to avoid Celery for task parallelism, yes, K8S can still help you for a while. Just keep using `LocalExecutor` instead of `CeleryExecutor` and delegate actual tasks to Kubernetes by calling e.g. `kubectl run --restart=Never ...` from your tasks. It will work until the concurrent `kubectl run` executions(up to the concurrency implied by scheduler's `max_threads` and LocalExecutor's `parallelism`. See [this SO question](https://stackoverflow.com/questions/38200666/airflow-parallelism) for gotchas) consumes all the resources a single airflow-scheduler pod provides, which will be after the pretty long time.
+
+This repository contains:
 
 * **Dockerfile(.template)** of [airflow](https://github.com/apache/incubator-airflow) for [Docker](https://www.docker.com/) images published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
 * **airflow.all.yaml** for manual creating Kubernetes services and deployments to run Airflow on Kubernetes
