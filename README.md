@@ -153,7 +153,7 @@ You can avoid forking this project by:
 
       DAG_PATH=$PWD
       cd /path/to/kube-aiflow
-      make ENBEDDED_DAGS_LOCATION=$DAG_PATH
+      make EMBEDDED_DAGS_LOCATION=$DAG_PATH
 
 - trigger the deployment on this new image on your Kubernetes infrastructure
 
