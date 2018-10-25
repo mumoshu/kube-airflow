@@ -48,13 +48,13 @@ and services for:
 * airflow-flower
 
 ## Helm Deployment (recommended)
+Run `helm dependency update airflow` to pull the redis and postgresql dependencies.
 
-Ensure your helm installation is done, you may need to have `TILLER_NAMESPACE` set as
-environment variable.
+You may need to have `TILLER_NAMESPACE` set as environment variable (usually kube-system).
 
 Deploy to Kubernetes using:
 
-    make helm-install NAMESPACE=yournamespace HELM_VALUES=/path/to/you/values.yaml
+    make helm-install NAMESPACE=yournamespace HELM_VALUES=airflow/values.yaml
 
 ### Helm ingresses
 
