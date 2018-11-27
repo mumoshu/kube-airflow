@@ -39,7 +39,7 @@ helm-install:
 	             $(CHART_LOCATION)
 
 helm-check:
-	helm install --dry_run \
+	helm install --dry-run \
 	            $(CHART_LOCATION) \
 	             --version=v0.1.0 \
 	             --name=$(HELM_APPLICATION_NAME) \
