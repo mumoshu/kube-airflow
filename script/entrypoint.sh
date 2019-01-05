@@ -75,4 +75,20 @@ if [ ! -z $GIT_SYNC_REPO ]; then
     $AIRFLOW_HOME/git-sync --dest $AIRFLOW_HOME/dags --force &
 fi
 
-$CMD "$@"
+# Run scheduler in a loop
+case "$1" in
+    scheduler)
+        while true; do
+            echo "Starting scheduler run at "$(date)
+            $CMD "$@"
+            exit_code=$(echo $?)
+            if [ $exit_code != 0 ]; then
+                echo "Scheduler had a fatal error. Exit code: "$exit_code
+                exit 1
+            fi
+        done
+        ;;
+    *)
+        $CMD "$@"
+        ;;
+
