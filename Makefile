@@ -1,8 +1,8 @@
-AIRFLOW_VERSION ?= 1.8.0.0
-KUBECTL_VERSION ?= 1.6.1
-KUBE_AIRFLOW_VERSION ?= 0.10
+AIRFLOW_VERSION ?= 1.10.2.0
+KUBECTL_VERSION ?= 1.14.1
+KUBE_AIRFLOW_VERSION ?= 0.18
 
-REPOSITORY ?= mumoshu/kube-airflow
+REPOSITORY ?= littlezerg/kube-airflow
 TAG ?= $(AIRFLOW_VERSION)-$(KUBECTL_VERSION)-$(KUBE_AIRFLOW_VERSION)
 IMAGE ?= $(REPOSITORY):$(TAG)
 ALIAS ?= $(REPOSITORY):$(AIRFLOW_VERSION)-$(KUBECTL_VERSION)
@@ -72,8 +72,7 @@ $(ROOTFS): $(BUILD_ROOT)
 
 $(AIRFLOW_CONF): $(BUILD_ROOT)
 	mkdir -p $(shell dirname $(AIRFLOW_CONF))
-	cp config/airflow.cfg $(AIRFLOW_CONF)
-
+	cp config/* $(shell dirname $(AIRFLOW_CONF))/.
 $(ENTRYPOINT_SH): $(BUILD_ROOT)
 	mkdir -p $(shell dirname $(ENTRYPOINT_SH))
 	cp script/entrypoint.sh $(ENTRYPOINT_SH)
@@ -98,6 +97,7 @@ $(BUILD_ROOT):
 	mkdir -p $(BUILD_ROOT)
 
 travis-env:
+
 	travis env set DOCKER_EMAIL $(DOCKER_EMAIL)
 	travis env set DOCKER_USERNAME $(DOCKER_USERNAME)
 	travis env set DOCKER_PASSWORD $(DOCKER_PASSWORD)
@@ -123,10 +123,23 @@ create:
 
 apply:
 	kubectl apply -f airflow.all.yaml --namespace $(NAMESPACE)
-
+apply-db:
+	kubectl apply -f airflow.db.yaml --namespace $(NAMESPACE)
+delete-db:
+	kubectl delete -f airflow.db.yaml --namespace $(NAMESPACE)
+apply-core:
+	kubectl apply -f airflow.core.yaml --namespace $(NAMESPACE)
 delete:
 	kubectl delete -f airflow.all.yaml --namespace $(NAMESPACE)
-
+delete-core:
+	kubectl delete -f airflow.core.yaml --namespace $(NAMESPACE)
+restart-core:
+	kubectl scale deployment web --replicas=0 --namespace $(NAMESPACE)
+	kubectl scale deployment web --replicas=1 --namespace $(NAMESPACE)
+	kubectl scale deployment scheduler --replicas=0 --namespace $(NAMESPACE)
+	kubectl scale deployment scheduler --replicas=1 --namespace $(NAMESPACE)
+	kubectl scale deployment worker --replicas=0 --namespace $(NAMESPACE)
+	kubectl scale deployment worker --replicas=1 --namespace $(NAMESPACE)
 list-pods:
 	kubectl get po -a --namespace $(NAMESPACE)
 

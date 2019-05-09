@@ -7,11 +7,13 @@ requests
 pyOpenSSL
 ndg-httpsclient
 pyasn1
-psycopg2
+#psycopg2
+psycopg2-binary
 celery>=4.0.0
 flower>=0.7.3
-# airflow[celery,postgresql,hive]
-git+https://github.com/apache/incubator-airflow#egg=airflow
+oauthlib>=3.0.0
+apache-airflow[celery,kubernetes,gcp_api,crypto,google_auth,redis,s3,slack,ssh]==1.10.2
+# git+https://github.com/apache/incubator-airflow#egg=airflow
 kubernetes
-Flask-WTF==0.14
+Flask-WTF>=0.14
 click

@@ -134,7 +134,9 @@ spec:
       restartPolicy: Always
       containers:
       - name: web
-        image: mumoshu/kube-airflow:1.8.0.0-1.6.1
+        image: littlezerg/kube-airflow:1.10.3.0-1.14.1
+        # image: mumoshu/kube-airflow:1.8.0.0-1.6.1
+        # image: puckel/docker-airflow:latest
         env:
         - name: AIRFLOW_HOME
           value: "/usr/local/airflow"
@@ -164,7 +166,9 @@ spec:
       restartPolicy: Always
       containers:
       - name: flower
-        image: mumoshu/kube-airflow:1.8.0.0-1.6.1
+        image: littlezerg/kube-airflow:1.10.3.0-1.14.1
+        # image: mumoshu/kube-airflow:1.8.0.0-1.6.1
+        # image: puckel/docker-airflow:latest
         env:
         - name: AIRFLOW_HOME
           value: "/usr/local/airflow"
@@ -191,13 +195,14 @@ spec:
       restartPolicy: Always
       containers:
       - name: scheduler
-        image: mumoshu/kube-airflow:1.8.0.0-1.6.1
-        # volumes:
-        #     - /localpath/to/dags:/usr/local/airflow/dags
+        image: littlezerg/kube-airflow:1.10.3.0-1.14.1
+        # image: mumoshu/kube-airflow:1.8.0.0-1.6.1
+        # image: puckel/docker-airflow:latest
+        # volumes: /home/zzhang-desktop/local_dags:/usr/local/airflow/dags
         env:
         - name: AIRFLOW_HOME
           value: "/usr/local/airflow"
-        args: ["scheduler", "-n", "5"]
+        args: ["scheduler"]
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -214,7 +219,9 @@ spec:
       restartPolicy: Always
       containers:
       - name: worker
-        image: mumoshu/kube-airflow:1.8.0.0-1.6.1
+        image: littlezerg/kube-airflow:1.10.3.0-1.14.1
+        # image: mumoshu/kube-airflow:1.8.0.0-1.6.1
+        # image: puckel/docker-airflow:latest
         # volumes:
         #     - /localpath/to/dags:/usr/local/airflow/dags
         env:

@@ -15,7 +15,7 @@ airflow:
   init_retry_loop:
   # base image for webserver/scheduler/workers
   image: puckel/docker-airflow
-  imageTag: 1.9.0
+  imageTag: 1.10.2
   # image_pull_policy: Always or IfNotPresent
   image_pull_policy: IfNotPresent
   # Set scheduler_num_runs to control how the schduler behaves:
