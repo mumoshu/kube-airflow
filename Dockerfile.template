@@ -59,7 +59,7 @@ RUN         set -ex \
         &&  locale-gen \
         &&  update-locale LANG=en_US.UTF-8 LC_ALL=en_US.UTF-8 \
         &&  useradd -ms /bin/bash -d ${AIRFLOW_HOME} airflow \
-        &&  pip3 install --upgrade pip 'setuptools!=36.0.0' \
+        &&  pip3 install --upgrade 'pip==9.0.3' 'setuptools!=36.0.0' \
         &&  if [ ! -e /usr/bin/pip ]; then ln -s /usr/bin/pip3 /usr/bin/pip ; fi \
         &&  if [ ! -e /usr/bin/python ]; then ln -sf /usr/bin/python3 /usr/bin/python; fi \
         &&  pip3 install -r /requirements/airflow.txt \
